@@ -1,0 +1,37 @@
+---
+/** one page of the site: the IDE with `path` open (server-rendered, then hydrated) */
+import Base from '@/layouts/Base.astro';
+import Ide from './Ide';
+import { loadVfs } from '@/lib/load-fs';
+import { profile } from '@/data/profile';
+
+interface Props {
+  path: string;
+  notFound?: boolean;
+}
+const { path, notFound = false } = Astro.props;
+const vfs = await loadVfs();
+const file = vfs[path]!;
+
+/** the first paragraph of plain text, for the meta description */
+const description = !path.endsWith('.md')
+  ? profile.headline
+  : (file.raw
+      .split(/\n{2,}/)
+      .map((b) => b.trim())
+      .find((b) => b && !/^[#|*_-]/.test(b))
+      ?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/[*_`]/g, '')
+      .replace(/\s+/g, ' ')
+      .slice(0, 160) ?? profile.headline);
+
+const title = notFound
+  ? `Not found · dev.nevcan.com`
+  : file.route === '/'
+    ? `${profile.name} · dev.nevcan.com`
+    : `${file.title} · dev.nevcan.com`;
+---
+
+<Base title={title} description={description} noindex={notFound}>
+  <Ide client:load vfs={vfs} initialPath={path} notFound={notFound} />
+</Base>

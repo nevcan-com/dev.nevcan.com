@@ -1,0 +1,17 @@
+---
+/** every file under src/fs/ has its own page: /about/whoami, /skills (skills/README.md), … */
+import type { GetStaticPaths } from 'astro';
+import IdePage from '@/components/ide/IdePage.astro';
+import { loadVfs } from '@/lib/load-fs';
+
+export const getStaticPaths = (async () => {
+  const vfs = await loadVfs();
+  return Object.values(vfs)
+    .filter((f) => f.route !== '/')
+    .map((f) => ({ params: { route: f.route.slice(1) }, props: { path: f.path } }));
+}) satisfies GetStaticPaths;
+
+const { path } = Astro.props;
+---
+
+<IdePage path={path} />
