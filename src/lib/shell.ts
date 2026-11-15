@@ -47,9 +47,13 @@ export interface Result {
 
 /** hidden files, only for `ls -a` and `cat` */
 const HIDDEN: Record<string, string> = {
-  '.plan': `Now:   dev.nevcan.com (you are here)
-Live:  dive.nevcan.com
-Next:  film.nevcan.com, shop.nevcan.com`,
+  '.plan': `Live:  dev.nevcan.com (you are here)
+       dive.nevcan.com
+       fit.nevcan.com
+Next:  www.nevcan.com
+       film.nevcan.com
+       game.nevcan.com
+       shop.nevcan.com`,
 };
 
 const txt = (t: string, c?: string): Seg => ({ t, c });
