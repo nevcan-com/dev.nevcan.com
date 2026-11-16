@@ -171,7 +171,26 @@ async function open({ touch = false } = {}) {
       await sleep(200);
     await sleep(500);
   };
-  return { ev, key, run, running, hint, lastLine, pane, reject, reload, exceptions, close };
+  /** the server-rendered page shows before React takes over; things it opens come a moment
+   *  later (on a cold CDN, after a deploy, a few seconds) */
+  const waitFor = async (fn, ms = 8000) => {
+    for (const t0 = Date.now(); Date.now() - t0 < ms; await sleep(200)) if (await fn()) return true;
+    return false;
+  };
+  return {
+    ev,
+    key,
+    run,
+    running,
+    hint,
+    lastLine,
+    pane,
+    reject,
+    reload,
+    waitFor,
+    exceptions,
+    close,
+  };
 }
 
 // ---------- desktop ----------
@@ -179,7 +198,10 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
 {
   const p = await open();
 
-  check('cookie pane shows on a first visit, even with a cookie-notice blocker', await p.pane());
+  check(
+    'cookie pane shows on a first visit, even with a cookie-notice blocker',
+    await p.waitFor(p.pane),
+  );
   await p.reject();
   await sleep(300);
   check('Reject closes it', !(await p.pane()));
@@ -334,7 +356,7 @@ console.log('\ntouch-only');
     p.ev(
       `(() => { const e = document.querySelector('${sel}'); return !!e && getComputedStyle(e).display !== 'none' })()`,
     );
-  check('cookie pane shows on a first visit', await p.pane());
+  check('cookie pane shows on a first visit', await p.waitFor(p.pane));
   await p.reject();
   check('no terminal', !(await shown('.terminal')));
   check('no terminal button in the title bar', !(await shown('.tb-term')));
