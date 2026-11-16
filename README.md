@@ -59,6 +59,8 @@ Add a check when something breaks, so it can't break the same way twice.
   without JavaScript and by search engines. Clicking around updates the URL; back/forward work.
 - Clicks in the explorer and the preview run through the shell (`open ~/…`), so the terminal shows
   the command for what the visitor just did.
+- The explorer starts with `legal`, `media`, `projects` and `experience/diving` closed (`FOUND_LATER` in
+  `Ide.tsx`): they're there to be found, not pointed at. A page opened in one of them opens it.
 - Panels default to `auto`: on desktop the explorer and terminal are open; on phones the reader
   comes first and the explorer is a drawer.
 - Touch-only devices (no `any-pointer: fine`: phones, most tablets) get no terminal at all, since

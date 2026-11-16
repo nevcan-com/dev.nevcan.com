@@ -196,6 +196,15 @@ function bubbles() {
   setTimeout(() => box.remove(), 5200);
 }
 
+/** folders that start closed in the explorer: there to be found, not pointed at */
+const FOUND_LATER = ['legal', 'media', 'projects', 'experience/diving'];
+/** a path's folders, outermost first: 'a/b/c.md' → ['a', 'a/b'] */
+const ancestors = (p: string) =>
+  p
+    .split('/')
+    .slice(0, -1)
+    .map((_, i, a) => a.slice(0, i + 1).join('/'));
+
 export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   const [tabs, setTabs] = useState<string[]>(notFound ? [] : [initialPath]);
   const [active, setActive] = useState<string | null>(notFound ? null : initialPath);
@@ -206,17 +215,14 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   const [termMax, setTermMax] = useState(false);
   const [explorer, setExplorer] = useState<Panel>('auto');
   const [termHeight, setTermHeight] = useState<number | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(
-    () =>
-      new Set(
-        Object.keys(vfs).flatMap((p) =>
-          p
-            .split('/')
-            .slice(0, -1)
-            .map((_, i, a) => a.slice(0, i + 1).join('/')),
-        ),
-      ),
-  );
+  // every folder starts open except the ones to discover (FOUND_LATER), unless the page that
+  // was opened lives in one of them
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    const open = new Set(Object.keys(vfs).flatMap(ancestors));
+    for (const d of FOUND_LATER) open.delete(d);
+    if (!notFound) for (const d of ancestors(initialPath)) open.add(d);
+    return open;
+  });
   const [items, setItems] = useState<TermItem[]>(() => outItems(welcome()));
   const [shell, setShell] = useState<ShellState>({ cwd: '', prev: '', history: [] });
   /** the cookie pane: null = closed; required = first visit, closes only with a choice */
@@ -247,6 +253,10 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     (path: string, push = true) => {
       setTabs((t) => (t.includes(path) ? t : [...t, path]));
       setActive(path);
+      // a file opened from a link or the terminal shows where it lives
+      setExpanded((x) =>
+        ancestors(path).every((d) => x.has(d)) ? x : new Set([...x, ...ancestors(path)]),
+      );
       setTermMax(false);
       if (push && location.pathname !== vfs[path]!.route)
         history.pushState({ path }, '', vfs[path]!.route);
