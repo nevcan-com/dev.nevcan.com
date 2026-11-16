@@ -1,6 +1,6 @@
 /**
  * Editor colour themes. The page's colour tokens come from here (Base.astro writes them as CSS),
- * so a palette lives in one place. `nevcan` is the default and is what visitors see until they
+ * so a palette lives in one place. Nev Style (`nev-style`) is the default and is what visitors see until they
  * pick another one; the pick is kept in localStorage (`dev-theme`) only when they make it.
  *
  * The palettes follow the published colour schemes (all MIT licensed): Atom's One Dark, Dracula,
@@ -50,8 +50,8 @@ export interface Theme {
 
 export const THEMES: Theme[] = [
   {
-    id: 'nevcan',
-    label: 'nevcan',
+    id: 'nev-style',
+    label: 'Nev Style',
     light: false,
     colors: {
       bg: '#0b0f14',
