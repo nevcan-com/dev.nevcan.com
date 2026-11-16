@@ -4,6 +4,9 @@
  * on a first visit it has no close button: it goes away when the visitor chooses. Accept, Reject
  * and Save look the same (KVKK Çerez Rehberi 2025, p. 30).
  * Text as approved for dive.nevcan.com on 2026-11-12, with this site's cookie names.
+ *
+ * The classes are prefs-*, never cookie-*: blockers using EasyList Cookie (Brave, uBlock Origin)
+ * hide `.cookie-pane` everywhere, and then the "Cookies" button seemed to do nothing.
  */
 import { useEffect, useId, useState } from 'react';
 import { ANALYTICS } from '@/data/analytics';
@@ -37,12 +40,12 @@ export default function CookiePane({ required, analytics, onChoose, onClose, onO
   );
 
   return (
-    <section className="cookie-pane" aria-labelledby={`${id}-title`}>
+    <section className="prefs-pane" aria-labelledby={`${id}-title`}>
       <div className="tabs">
         <div className="tab-list">
           <div className="tab active">
             <span className="tab-name">
-              <span className="cookie-dot" aria-hidden="true" />
+              <span className="prefs-dot" aria-hidden="true" />
               cookie-settings
             </span>
             {required ? (
@@ -65,7 +68,7 @@ export default function CookiePane({ required, analytics, onChoose, onClose, onO
         </div>
       </div>
 
-      <div className="cookie-body">
+      <div className="prefs-body">
         <h2 id={`${id}-title`}>Cookies, only if you agree</h2>
         <p>
           With your consent, this site uses Google Analytics to see which pages are visited. No
@@ -110,7 +113,7 @@ export default function CookiePane({ required, analytics, onChoose, onClose, onO
         </p>
       </div>
 
-      <div className="cookie-foot">
+      <div className="prefs-foot">
         <div className="cc-actions">
           <button className="cc-btn" type="button" onClick={() => onChoose(true)}>
             Accept

@@ -903,7 +903,7 @@ button {
   min-width: 0;
 }
 
-.cookie-pane {
+.prefs-pane {
   flex: none;
   display: flex;
   flex-direction: column;
@@ -919,12 +919,12 @@ button {
     transform: translateX(16px);
   }
 }
-.cookie-pane .tab-name {
+.prefs-pane .tab-name {
   padding-right: 0.6rem;
   font-family: var(--mono);
   font-size: 0.78rem;
 }
-.cookie-dot {
+.prefs-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -941,35 +941,35 @@ button {
   white-space: nowrap;
 }
 
-.cookie-body {
+.prefs-body {
   flex: 1;
   overflow: auto;
   padding: 1.25rem 1.25rem 1.5rem;
   font-size: 0.85rem;
   line-height: 1.55;
 }
-.cookie-body h2 {
+.prefs-body h2 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
   color: var(--text-strong);
 }
-.cookie-body > p {
+.prefs-body > p {
   margin: 0 0 0.75rem;
   color: var(--muted);
 }
-.cookie-body a {
+.prefs-body a {
   color: var(--accent);
 }
-.cookie-body code {
+.prefs-body code {
   font-family: var(--mono);
   color: var(--warm);
 }
-.cookie-body .cc-later {
+.prefs-body .cc-later {
   margin: 0;
   font-size: 0.78rem;
 }
 /* the choices stay in view however much text scrolls above them */
-.cookie-foot {
+.prefs-foot {
   flex: none;
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--line);
@@ -1073,7 +1073,7 @@ button {
   .editor-row {
     flex-direction: column;
   }
-  .cookie-pane {
+  .prefs-pane {
     width: auto;
     max-height: 55%;
     border-left: 0;
@@ -1086,13 +1086,13 @@ button {
       transform: translateY(16px);
     }
   }
-  .cookie-pane .tabs {
+  .prefs-pane .tabs {
     height: 34px;
   }
-  .cookie-body {
+  .prefs-body {
     padding: 0.9rem 1rem 1rem;
   }
-  .cookie-foot {
+  .prefs-foot {
     padding: 0.6rem 1rem;
   }
 }
@@ -1334,7 +1334,7 @@ button {
   .terminal {
     order: 2;
   }
-  .cookie-pane {
+  .prefs-pane {
     order: 3;
   }
 }
