@@ -3,7 +3,7 @@
  * Enter or a click picks it, Esc (or a click outside) goes back to the one you had. Previewing
  * saves nothing; picking saves the theme on this device (lib/theme.ts).
  */
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DEFAULT_THEME, THEMES, type Theme } from '@/data/themes';
 import { currentTheme, pickTheme, showTheme } from '@/lib/theme';
 
@@ -40,31 +40,25 @@ export default function ThemePicker({ onClose }: { onClose: () => void }) {
     setFocus(i);
     showTheme(THEMES[i]!);
   };
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+  // the keys, wherever focus is (the terminal can take focus back as a program ends); capture,
+  // so they never reach the page while the picker is open
+  useEffect(() => {
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp')
+        move(focus + (e.key === 'ArrowDown' ? 1 : -1));
+      else if (e.key === 'Home' || e.key === 'End') move(e.key === 'Home' ? 0 : THEMES.length - 1);
+      else if (e.key === 'Enter') pick(THEMES[focus]!);
+      else if (e.key === 'Escape') cancel();
+      else if (e.key !== 'Tab') return;
       e.preventDefault();
-      move(focus + (e.key === 'ArrowDown' ? 1 : -1));
-    } else if (e.key === 'Home' || e.key === 'End') {
-      e.preventDefault();
-      move(e.key === 'Home' ? 0 : THEMES.length - 1);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      cancel();
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-    }
-    // keep these keys away from the page (the terminal, open programs)
-    e.stopPropagation();
-  };
+      e.stopPropagation();
+    };
+    addEventListener('keydown', onKey, true);
+    return () => removeEventListener('keydown', onKey, true);
+  });
 
   return (
-    <div
-      ref={box}
-      className="theme-pick"
-      role="dialog"
-      aria-label="Colour theme"
-      onKeyDown={onKeyDown}
-    >
+    <div ref={box} className="theme-pick" role="dialog" aria-label="Colour theme">
       <p className="theme-pick-title">Colour theme</p>
       <div ref={list} role="listbox" aria-label="Themes">
         {THEMES.map((t, i) => {
