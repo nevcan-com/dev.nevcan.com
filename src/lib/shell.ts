@@ -13,7 +13,8 @@ import { HOME, basename, displayPath, isDir, isFile, listDir, resolvePath, type 
 
 export interface Seg {
   t: string;
-  /** a class from ide.css: dir, file, err, muted, accent, h, code, link, cmd */
+  /** a class from ide.css: dir, file, err, muted, accent, h, code, link, cmd; `logo` draws the
+   *  logo's N (neofetch) */
   c?: string;
   /** external link */
   href?: string;
@@ -67,6 +68,20 @@ Next:  www.nevcan.com
        film.nevcan.com
        game.nevcan.com
        shop.nevcan.com`,
+  '.social': `LinkedIn    linkedin.com/in/nevcanuludas
+GitHub      github.com/nevcanuludas
+GitLab      gitlab.com/nevcanuludas
+GUE         gue.com/diver-training/gue-instructors/instructor-resume?id=20397
+GUE TV      gue.tv/authors/nev?via=nev
+Instagram   instagram.com/nevcanuludas
+YouTube     youtube.com/nevcanuludas
+Medium      medium.com/@nevcanuludas
+            medium.com/neptunsualti
+Sketchfab   sketchfab.com/nevcanuludas
+X           x.com/nevcanuludas
+Bluesky     nevcanuludas.bsky.social
+Facebook    facebook.com/nevcanuludas
+Card        hihello.com/p/2a5123b0-641a-4681-8852-c963488baf28`,
 };
 
 const txt = (t: string, c?: string): Seg => ({ t, c });
@@ -556,15 +571,10 @@ export const COMMANDS: Record<string, Cmd> = {
   neofetch: {
     desc: 'the system, at a glance',
     fn: () => {
-      const art = [
-        '  _   _ ',
-        ' | \\ | |',
-        ' |  \\| |',
-        ' | |\\  |',
-        ' |_| \\_|',
-        '        ',
-        '        ',
-      ];
+      // the N from the logo, drawn as the real SVG next to the lines (TermLine: c 'logo');
+      // as text (pipes, copying) it is just blank space
+      const width = 14;
+      const art: Seg[][] = [[{ t: ' '.repeat(width), c: 'logo' }]];
       const info: Line[] = [
         line(txt('guest', 'accent'), '@', txt('dev.nevcan.com', 'accent')),
         muted('-------------------'),
@@ -581,7 +591,7 @@ export const COMMANDS: Record<string, Cmd> = {
           c: 'link',
         }),
       ];
-      return info.map((l, i) => [txt((art[i] ?? '').padEnd(11), 'accent'), ...l]);
+      return info.map((l, i) => [...(art[i] ?? [txt(' '.repeat(width))]), ...l]);
     },
   },
   contact: {
@@ -599,6 +609,14 @@ export const COMMANDS: Record<string, Cmd> = {
           c: 'link',
         }),
       ),
+      line(txt('Time zone'.padEnd(10), 'muted'), profile.timezone),
+      [],
+      line(txt('Diving: ', 'muted'), {
+        t: 'dive.nevcan.com',
+        href: 'https://dive.nevcan.com',
+        c: 'link',
+      }),
+      line(txt('Everything else: ', 'muted'), { t: 'cat .social', c: 'cmd', run: 'cat ~/.social' }),
     ],
   },
   theme: {

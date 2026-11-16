@@ -1,9 +1,9 @@
 # Nevcan Uludaş
 
-Software developer for twenty years: front-end architect, full-stack developer, and today
-co-founder & CTPO of [Dipnot](projects/dipnot.md).
+Front-end architect with twenty years in software. Today I'm co-founder & CTPO of
+[Dipnot](projects/dipnot.md).
 
-This site is a small file system. Everything about my work is a file you can open.
+This site is a small file system: everything about my work is a file you can open.
 
 ## Two ways to look around
 
@@ -15,10 +15,13 @@ This site is a small file system. Everything about my work is a file you can ope
 ## Where to start
 
 - [whoami](about/whoami.md): the short version
-- [experience/](experience/2019-sabancidx.md): where I've worked, one file per role
-- [skills](skills/README.md): what I work with
+- [experience/](experience/2025-dipnot.md): roles and companies, newest first
 - [projects/](projects/dipnot.md): what I'm building now
+- [skills](skills/README.md): what I work with
 - [education](education.md)
 - [contact](contact.md)
 
-The other half of my life is underwater: [dive.nevcan.com](https://dive.nevcan.com).
+---
+
+Diving is my passion, and underwater is where I feel most at home. More at
+[dive.nevcan.com](https://dive.nevcan.com).

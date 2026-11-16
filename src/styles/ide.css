@@ -421,6 +421,22 @@ button {
   border-color: var(--accent);
   color: var(--accent);
 }
+.prose hr {
+  height: 0;
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+/* a table with an empty header row is a list of facts: no header, labels in the first column */
+.prose thead:not(:has(th:not(:empty))) {
+  display: none;
+}
+.prose table:has(thead th:empty) td:first-child {
+  width: 1%;
+  padding-right: 1.5rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .prose table {
   width: 100%;
   border-collapse: collapse;
@@ -635,6 +651,27 @@ button {
 }
 .t-muted {
   color: var(--muted);
+}
+/* neofetch: the logo's N, over the blank space its first line leaves */
+.t-logo {
+  position: relative;
+}
+.t-logo svg {
+  position: absolute;
+  top: 0.35em;
+  left: 0.1em;
+  height: 7.4em;
+  overflow: visible;
+}
+.t-logo path {
+  fill: none;
+  stroke: var(--text-strong);
+  stroke-width: 40;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.t-logo circle {
+  fill: var(--accent);
 }
 .t-accent,
 .t-h {

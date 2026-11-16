@@ -3,6 +3,16 @@ import type { Line, Seg } from '@/lib/shell';
 
 export function SegView({ s, onExec }: { s: Seg; onExec?: (c: string) => void }) {
   const cls = s.c ? `t-${s.c}` : undefined;
+  if (s.c === 'logo')
+    return (
+      <span className="t-logo">
+        {s.t}
+        <svg viewBox="316 253 251 262" aria-hidden="true">
+          <path d="M350 283 533 485V283" />
+          <circle cx="353" cy="478" r="27" />
+        </svg>
+      </span>
+    );
   if (s.href)
     return (
       <a

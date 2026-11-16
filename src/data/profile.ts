@@ -5,8 +5,10 @@
  */
 export const profile = {
   name: 'Nevcan Uludaş',
-  headline: 'Developer · front-end architect · co-founder & CTPO @ Dipnot',
+  headline: 'Front-end architect · co-founder & CTPO @ Dipnot',
   location: 'Istanbul',
+  /** Türkiye has been on UTC+3 all year since 2016 */
+  timezone: 'Istanbul, UTC+3 all year',
   since: 2006,
   current: 'Co-founder & CTPO @ Dipnot',
   languages: 'Turkish, English',
@@ -14,6 +16,5 @@ export const profile = {
   links: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/nevcanuludas' },
     { label: 'GitHub', href: 'https://github.com/nevcanuludas' },
-    { label: 'Diving', href: 'https://dive.nevcan.com' },
   ],
 };
