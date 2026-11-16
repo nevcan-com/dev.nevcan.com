@@ -188,20 +188,23 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     (await p.ev(`document.querySelectorAll('code.runnable').length`)) > 0,
   );
 
-  await p.run('matrix');
-  check('matrix runs', await p.running());
-  await p.key('x');
-  check('matrix: another key does not quit', await p.running());
-  await p.key('q');
-  check('matrix: q quits', !(await p.running()));
-
-  await p.run('aquarium');
-  await p.key('Escape');
-  check('aquarium: Esc quits', !(await p.running()));
-
-  await p.run('top');
-  await p.key('c', true);
-  check('top: Ctrl+C quits', !(await p.running()));
+  // things to watch, not games: they only quit, and Space does nothing
+  for (const [prog, quit, label] of [
+    ['matrix', ['q'], 'q'],
+    ['aquarium', ['Escape'], 'Esc'],
+    ['top', ['c', true], 'Ctrl+C'],
+  ]) {
+    await p.run(prog);
+    await p.key('x');
+    await p.key(' ');
+    check(
+      `${prog}: other keys and Space do nothing`,
+      (await p.running()) && (await p.hint()) === 'q quit',
+      await p.hint(),
+    );
+    await p.key(...quit);
+    check(`${prog}: ${label} quits`, !(await p.running()));
+  }
 
   await p.run('snake');
   await p.key(' ');

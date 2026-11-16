@@ -74,7 +74,7 @@ Add a check when something breaks, so it can't break the same way twice.
   `src/components/ide/programs/`, one lazy chunk each: nothing is downloaded until someone runs
   one. Animations respect reduced motion.
 - The same keys in every program (`programs/common.tsx`): q, Esc or Ctrl+C quit (where letters
-  are typed, q is a letter, so only Esc and Ctrl+C); Space pauses and, after a game ends, plays
+  are typed, q is a letter, so only Esc and Ctrl+C); Space pauses games and, after one ends, plays
   again; Enter answers in the games you type into; arrows move. Each shows them with `<Hint>` in
   the bottom-right corner. Programs that print into the scrollback (`ping`, `hire`) stop only
   for Ctrl+C, like the real ones. `sl` stops for no key at all, on purpose.

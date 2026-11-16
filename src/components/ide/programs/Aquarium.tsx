@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Hint,
   isQuit,
-  isSpace,
   reducedMotion,
   useGrid,
   useKeys,
@@ -48,7 +47,6 @@ export default function Aquarium({ exit }: ProgramProps) {
   const fish = useRef<Fish[]>([]);
   const bubbles = useRef<Bubble[]>([]);
   const still = reducedMotion();
-  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     if (!cols || !rows) return;
@@ -81,16 +79,12 @@ export default function Aquarium({ exit }: ProgramProps) {
       }
       setT((n) => n + 1);
     },
-    !still && !paused,
+    !still,
   );
   useKeys((e) => {
-    if (isQuit(e)) {
-      e.preventDefault();
-      exit();
-    } else if (isSpace(e) && !still) {
-      e.preventDefault();
-      setPaused((p) => !p);
-    }
+    if (!isQuit(e)) return;
+    e.preventDefault();
+    exit();
   });
 
   // draw the scene into a grid of cells
@@ -151,16 +145,7 @@ export default function Aquarium({ exit }: ProgramProps) {
           );
         })}
       </pre>
-      <Hint
-        keys={
-          still
-            ? [['q', 'quit']]
-            : [
-                ['space', paused ? 'go on' : 'pause'],
-                ['q', 'quit'],
-              ]
-        }
-      />
+      <Hint keys={[['q', 'quit']]} />
     </div>
   );
 }
