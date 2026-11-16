@@ -1,12 +1,12 @@
 /**
  * `guess`: find the hidden 4-character commit hash (hex, no character twice) in 12 tries. After
  * each try you learn how many characters are in the right place and how many are in the hash but
- * somewhere else (the old "bulls and cows" game). A hidden input takes the keys, so phone
- * keyboards work. Enter: try / play again. q or Esc: quit.
+ * somewhere else (the old "bulls and cows" game). A hidden input takes the keys. Enter: try /
+ * play again. q, Esc or Ctrl+C: quit (q is not a hex character, so it can't be a guess).
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Line } from '@/lib/shell';
-import { useKeys, type ProgramProps } from './common';
+import { Hint, isQuit, useKeys, type ProgramProps } from './common';
 
 const HEX = '0123456789abcdef';
 const LEN = 4;
@@ -81,7 +81,7 @@ export default function Guess({ exit }: ProgramProps) {
   };
 
   useKeys((e) => {
-    if (e.key === 'Escape' || e.key === 'q' || (e.ctrlKey && e.key.toLowerCase() === 'c')) {
+    if (isQuit(e)) {
       e.preventDefault();
       exit(summary());
     } else if (e.key === 'Enter') {
@@ -134,18 +134,16 @@ export default function Guess({ exit }: ProgramProps) {
         <p>
           <span className="t-accent">
             Found it: {secret}, in {tries.length} {tries.length === 1 ? 'try' : 'tries'}.
-          </span>{' '}
-          <span className="t-muted">Enter: again · q: quit</span>
+          </span>
         </p>
       ) : over ? (
         <p>
-          <span className="t-err">Out of tries. It was {secret}.</span>{' '}
-          <span className="t-muted">Enter: again · q: quit</span>
+          <span className="t-err">Out of tries. It was {secret}.</span>
         </p>
       ) : (
         <p className="t-muted">
           <span className="t-accent">●</span> right place · <span className="t-dir">○</span> in the
-          hash, wrong place · Enter: try
+          hash, wrong place
         </p>
       )}
       <input
@@ -160,9 +158,12 @@ export default function Guess({ exit }: ProgramProps) {
         enterKeyHint="go"
         aria-label="Your guess"
       />
-      <button type="button" className="game-quit" onClick={() => exit(summary())}>
-        quit (q)
-      </button>
+      <Hint
+        keys={[
+          ['enter', over ? 'again' : 'try'],
+          ['q', 'quit'],
+        ]}
+      />
     </div>
   );
 }

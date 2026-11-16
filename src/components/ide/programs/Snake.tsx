@@ -1,12 +1,12 @@
 /**
  * `snake`: eat the braces, don't hit the walls or yourself. Each cell is two characters wide so
- * the board looks square. Arrows, WASD or hjkl steer (swipe on a phone), Space pauses, q/Esc
- * quits and prints your score. Speeds up a little with every brace. The best score is kept in
+ * the board looks square. Arrows, WASD or hjkl steer, Space pauses (and plays again after a
+ * crash), q / Esc / Ctrl+C quit and print your score. Speeds up a little with every brace. The best score is kept in
  * this browser only (localStorage, when it's allowed).
  */
-import { useRef, useState, type ReactNode, type TouchEvent } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import type { Line } from '@/lib/shell';
-import { isQuit, useGrid, useKeys, useTick, type ProgramProps } from './common';
+import { Hint, isQuit, isSpace, useGrid, useKeys, useTick, type ProgramProps } from './common';
 
 type P = { x: number; y: number };
 type Dir = 'up' | 'down' | 'left' | 'right';
@@ -86,7 +86,6 @@ export default function Snake({ exit }: ProgramProps) {
   const [, redraw] = useState(0);
   const best = useRef(readBest());
   const played = useRef(0);
-  const touch = useRef<P | null>(null);
 
   // board size: two characters per cell, room for the borders, the status line and the hint
   const w = Math.min(MAX_W, Math.floor((cols - 2) / 2));
@@ -172,34 +171,13 @@ export default function Snake({ exit }: ProgramProps) {
       e.preventDefault();
       if (phase === 'over') return;
       steer(d);
-    } else if (e.key === ' ' || e.key === 'p' || e.key === 'Enter') {
+    } else if (isSpace(e)) {
       e.preventDefault();
       if (phase === 'over') restart();
       else if (phase === 'play') setPhase('pause');
       else setPhase('play');
     }
   });
-
-  const onTouchStart = (e: TouchEvent) => {
-    const t = e.touches[0]!;
-    touch.current = { x: t.clientX, y: t.clientY };
-  };
-  const onTouchEnd = (e: TouchEvent) => {
-    const start = touch.current;
-    const t = e.changedTouches[0];
-    touch.current = null;
-    if (!start || !t) return;
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) {
-      // a tap: start, pause or play again
-      if (phase === 'over') restart();
-      else setPhase(phase === 'play' ? 'pause' : 'play');
-      return;
-    }
-    if (Math.abs(dx) > Math.abs(dy)) steer(dx > 0 ? 'right' : 'left');
-    else steer(dy > 0 ? 'down' : 'up');
-  };
 
   let board: ReactNode = null;
   if (g) {
@@ -218,9 +196,9 @@ export default function Snake({ exit }: ProgramProps) {
       phase === 'ready'
         ? 'press an arrow key to start'
         : phase === 'pause'
-          ? 'paused · Space to go on'
+          ? 'paused · space to go on'
           : phase === 'over'
-            ? `game over · ${g.score} · Space: again · q: quit`
+            ? `game over · ${g.score} · space: again`
             : '';
     // the message sits on the middle row, over the board
     const mid = Math.floor(g.h / 2) - (phase === 'ready' ? 2 : 0);
@@ -276,15 +254,15 @@ export default function Snake({ exit }: ProgramProps) {
   }
 
   return (
-    <div
-      className="prog-snake"
-      ref={box}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
-      aria-label={`Snake. Score ${g?.score ?? 0}.`}
-    >
+    <div className="prog-snake" ref={box} aria-label={`Snake. Score ${g?.score ?? 0}.`}>
       {board}
-      <div className="prog-hint">arrows / wasd / hjkl · space pauses · q quits</div>
+      <Hint
+        keys={[
+          ['←↑↓→', 'steer'],
+          ['space', phase === 'play' ? 'pause' : phase === 'over' ? 'again' : 'go'],
+          ['q', 'quit'],
+        ]}
+      />
     </div>
   );
 }

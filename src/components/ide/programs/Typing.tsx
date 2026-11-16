@@ -1,12 +1,12 @@
 /**
  * `typing`: type a short snippet as fast as you can; words per minute and accuracy at the end.
  * A hidden textarea takes the input, so phone keyboards work too. Indentation after a line break
- * is typed for you. Enter: next snippet. Esc: quit (prints your best).
+ * is typed for you. Enter: next snippet. Esc or Ctrl+C: quit (prints your best).
  */
 import { useEffect, useRef, useState } from 'react';
 import { snippets } from '@/data/fun';
 import type { Line } from '@/lib/shell';
-import { useKeys, type ProgramProps } from './common';
+import { Hint, isQuit, useKeys, type ProgramProps } from './common';
 
 interface Result {
   wpm: number;
@@ -50,7 +50,7 @@ export default function Typing({ exit }: ProgramProps) {
   };
 
   useKeys((e) => {
-    if (e.key === 'Escape' || (e.ctrlKey && e.key.toLowerCase() === 'c')) {
+    if (isQuit(e, true)) {
       e.preventDefault();
       exit(summary());
     } else if (result && e.key === 'Enter') {
@@ -121,11 +121,19 @@ export default function Typing({ exit }: ProgramProps) {
       {result ? (
         <p>
           <span className="t-accent">{result.wpm} wpm</span> · {result.accuracy}% accuracy ·{' '}
-          {result.seconds}s <span className="t-muted">· Enter: next · Esc: quit</span>
+          {result.seconds}s
         </p>
-      ) : (
-        <p className="t-muted">Esc to quit</p>
-      )}
+      ) : null}
+      <Hint
+        keys={
+          result
+            ? [
+                ['enter', 'next'],
+                ['esc', 'quit'],
+              ]
+            : [['esc', 'quit']]
+        }
+      />
     </div>
   );
 }

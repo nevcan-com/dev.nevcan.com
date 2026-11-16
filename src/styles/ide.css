@@ -1130,6 +1130,10 @@ button {
   font-family: var(--mono);
   font-size: 0.7rem;
 }
+.prog-hint kbd {
+  color: var(--muted);
+  font: inherit;
+}
 .prog-top {
   padding: 0.4rem 1rem;
   white-space: pre;
@@ -1208,20 +1212,6 @@ button {
   width: 1px;
   height: 1px;
   pointer-events: none;
-}
-.game-quit {
-  position: absolute;
-  right: 0.75rem;
-  bottom: 0.4rem;
-  padding: 0 0.4rem;
-  border-radius: 4px;
-  background: var(--panel-2);
-  color: var(--faint);
-  font-family: var(--mono);
-  font-size: 0.7rem;
-}
-.game-quit:hover {
-  color: var(--text);
 }
 .prog-canvas canvas {
   display: block;
@@ -1321,6 +1311,23 @@ button {
   text-align: center;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+/* touch-only devices (phones, most tablets): no terminal, it needs a keyboard. Not a width
+   check: an iPad with a keyboard and trackpad, or a narrow desktop window, keeps it. */
+.only-touch {
+  display: none;
+}
+@media not all and (any-pointer: fine) {
+  .terminal,
+  .tb-term,
+  .act-term,
+  .hide-touch {
+    display: none !important;
+  }
+  .only-touch {
+    display: inline;
+  }
 }
 
 /* phones: the cookie group sits at the very bottom, under the terminal bar */

@@ -1,9 +1,10 @@
 /**
- * `sl`: you meant `ls`, so a train crosses the terminal. Like the original Unix joke it ignores
- * Ctrl+C (Esc still works). The drawing is our own: a locomotive pulling the nevcan.com sites.
+ * `sl`: you meant `ls`, so a train crosses the terminal. Like the original Unix joke it doesn't
+ * stop for any key (the one exception to the keys in common.tsx); it takes a few seconds, and with
+ * reduced motion it stands still for 2.5 s instead. The drawing is our own: a locomotive pulling the nevcan.com sites.
  */
 import { useRef, useState } from 'react';
-import { isQuit, reducedMotion, useGrid, useKeys, useTick, type ProgramProps } from './common';
+import { reducedMotion, useGrid, useKeys, useTick, type ProgramProps } from './common';
 
 const TRAIN = [
   '      (  )  (   )   )                                         ',
@@ -20,13 +21,14 @@ export default function Sl({ exit }: ProgramProps) {
   const box = useRef<HTMLDivElement>(null);
   const { cols } = useGrid(box);
   const [x, setX] = useState<number | null>(null);
-  const ctrlC = useRef(false);
+  /** what they tried, for the parting line */
+  const tried = useRef<string | null>(null);
   const still = reducedMotion();
 
   const leave = () =>
     exit(
-      ctrlC.current
-        ? [[{ t: "sl: trains don't stop for Ctrl+C. You meant ls.", c: 'muted' }]]
+      tried.current
+        ? [[{ t: `sl: trains don't stop for ${tried.current}. You meant ls.`, c: 'muted' }]]
         : [[{ t: 'sl: you meant ls.', c: 'muted' }]],
     );
 
@@ -44,12 +46,13 @@ export default function Sl({ exit }: ProgramProps) {
   useKeys((e) => {
     if (e.ctrlKey && e.key.toLowerCase() === 'c') {
       e.preventDefault();
-      ctrlC.current = true;
-      return;
-    }
-    if (isQuit(e)) {
+      tried.current = 'Ctrl+C';
+    } else if (e.key === 'q') {
       e.preventDefault();
-      leave();
+      tried.current = 'q';
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      tried.current = 'Esc';
     }
   });
 

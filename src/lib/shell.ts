@@ -606,7 +606,7 @@ export const COMMANDS: Record<string, Cmd> = {
     },
   },
   top: {
-    desc: "what's running right now (q quits)",
+    desc: "what's running right now",
     fn: (_, ctx) => program(ctx, 'top'),
   },
   htop: { desc: '', hidden: true, fn: (_, ctx) => program(ctx, 'htop') },
@@ -656,11 +656,11 @@ export const COMMANDS: Record<string, Cmd> = {
     fn: (args, ctx) => grep(args, ctx),
   },
   matrix: {
-    desc: 'follow the white rabbit (any key quits)',
+    desc: 'follow the white rabbit',
     fn: (_, ctx) => program(ctx, 'matrix'),
   },
   aquarium: {
-    desc: 'a few fish, swimming (q quits)',
+    desc: 'a few fish, swimming',
     fn: (_, ctx) => program(ctx, 'aquarium'),
   },
   typing: {
@@ -668,7 +668,7 @@ export const COMMANDS: Record<string, Cmd> = {
     fn: (_, ctx) => program(ctx, 'typing'),
   },
   snake: {
-    desc: 'eat the braces, mind the walls (q quits)',
+    desc: 'eat the braces, mind the walls',
     fn: (_, ctx) => program(ctx, 'snake'),
   },
   guess: {

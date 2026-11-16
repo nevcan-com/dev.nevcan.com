@@ -231,6 +231,8 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
+  /** touch-only (phones, most tablets): the terminal is hidden there (ide.css, .only-touch) */
+  const keyboardless = () => !window.matchMedia('(any-pointer: fine)').matches;
   /** what `auto` currently means on this screen */
   const termOpen = () => term === 'open' || (term === 'auto' && !isMobile());
 
@@ -385,6 +387,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   // `whoami` in the prose is a button: it runs in the terminal
   const proseRef = useRef<HTMLElement>(null);
   useEffect(() => {
+    if (keyboardless()) return;
     proseRef.current?.querySelectorAll('code').forEach((c) => {
       const name = c.textContent?.trim().split(/\s+/)[0] ?? '';
       if (!(name in COMMANDS) || c.closest('a')) return;
@@ -517,13 +520,18 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     const link = t.closest('a');
     if (el) {
       const path = el.dataset.path!;
+      const term = !keyboardless();
       if (el.dataset.kind === 'file')
         items.push(
           { label: 'Open', action: () => openViaShell(path) },
-          {
-            label: 'Open in terminal',
-            action: () => openInTerminal(`cd ~/${dirname(path)} && ls`),
-          },
+          ...(term
+            ? [
+                {
+                  label: 'Open in terminal',
+                  action: () => openInTerminal(`cd ~/${dirname(path)} && ls`),
+                },
+              ]
+            : []),
           { label: 'Copy link', action: () => copy(location.origin + vfs[path]!.route, 'link') },
           { label: 'Copy path', action: () => copy(`~/${path}`, 'path') },
           { label: 'Download', action: () => download(path) },
@@ -532,7 +540,9 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       else
         items.push(
           { label: expanded.has(path) ? 'Collapse' : 'Expand', action: () => toggleDir(path) },
-          { label: 'Open in terminal', action: () => openInTerminal(`cd ~/${path} && ls`) },
+          ...(term
+            ? [{ label: 'Open in terminal', action: () => openInTerminal(`cd ~/${path} && ls`) }]
+            : []),
           { label: 'Copy path', action: () => copy(`~/${path}`, 'path') },
           'separator',
         );
@@ -567,7 +577,9 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       { label: 'Open LinkedIn', action: () => window.open(linkedin, '_blank', 'noopener') },
       { label: 'Open GitHub', action: () => window.open(github, '_blank', 'noopener') },
       'separator',
-      { label: termOpen() ? 'Hide terminal' : 'Show terminal', action: toggleTerm },
+      ...(keyboardless()
+        ? []
+        : [{ label: termOpen() ? 'Hide terminal' : 'Show terminal', action: toggleTerm }]),
       ...(analyticsOn ? [{ label: 'Cookie settings', action: openCookies }] : []),
     );
     setMenu({ x: e.clientX, y: e.clientY, items });
@@ -918,7 +930,8 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
         <span className="sb-item sb-flash" aria-live="polite">
           {flash}
         </span>
-        <span className="sb-item">{displayPath(shell.cwd)}</span>
+        <span className="sb-item hide-touch">{displayPath(shell.cwd)}</span>
+        <span className="sb-item only-touch">⌨ the terminal needs a keyboard</span>
         <span className="sb-spacer" />
         {file && !file.binary && (
           <span className="sb-item hide-mobile">

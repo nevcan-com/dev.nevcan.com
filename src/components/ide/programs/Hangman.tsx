@@ -1,13 +1,12 @@
 /**
  * `hangman`: guess the tech word one letter at a time. Every wrong letter takes a server light
  * down; six and the rack is on fire. The words and hints live in data/fun.ts. A hidden input takes
- * the keys, so phone keyboards work. Enter: next word. Esc: quit (every letter is a guess, so q
- * doesn't quit here).
+ * the keys. Enter: next word. Esc or Ctrl+C: quit (q is a letter here, so it doesn't quit).
  */
 import { useEffect, useRef, useState } from 'react';
 import { words } from '@/data/fun';
 import type { Line } from '@/lib/shell';
-import { useKeys, type ProgramProps } from './common';
+import { Hint, isQuit, useKeys, type ProgramProps } from './common';
 
 const LIVES = 6;
 
@@ -82,7 +81,7 @@ export default function Hangman({ exit }: ProgramProps) {
   };
 
   useKeys((e) => {
-    if (e.key === 'Escape' || (e.ctrlKey && e.key.toLowerCase() === 'c')) {
+    if (isQuit(e, true)) {
       e.preventDefault();
       exit(summary());
     } else if (e.key === 'Enter' && over) {
@@ -128,13 +127,11 @@ export default function Hangman({ exit }: ProgramProps) {
       </p>
       {won ? (
         <p>
-          <span className="t-accent">Deployed. The servers are safe.</span>{' '}
-          <span className="t-muted">Enter: next word · Esc: quit</span>
+          <span className="t-accent">Deployed. The servers are safe.</span>
         </p>
       ) : lost ? (
         <p>
-          <span className="t-err">The rack is on fire. It was {word}.</span>{' '}
-          <span className="t-muted">Enter: next word · Esc: quit</span>
+          <span className="t-err">The rack is on fire. It was {word}.</span>
         </p>
       ) : (
         <p className="t-muted">
@@ -156,9 +153,16 @@ export default function Hangman({ exit }: ProgramProps) {
         enterKeyHint="go"
         aria-label="Type a letter"
       />
-      <button type="button" className="game-quit" onClick={() => exit(summary())}>
-        quit (Esc)
-      </button>
+      <Hint
+        keys={
+          over
+            ? [
+                ['enter', 'next word'],
+                ['esc', 'quit'],
+              ]
+            : [['esc', 'quit']]
+        }
+      />
     </div>
   );
 }

@@ -45,15 +45,23 @@ npm run format
 - Clicks in the explorer and the preview run through the shell (`open ~/…`), so the terminal shows
   the command for what the visitor just did.
 - Panels default to `auto`: on desktop the explorer and terminal are open; on phones the reader
-  comes first, the explorer is a drawer and the terminal a bar at the bottom.
+  comes first and the explorer is a drawer.
+- Touch-only devices (no `any-pointer: fine`: phones, most tablets) get no terminal at all, since
+  it needs a keyboard; the status bar says so. This is a pointer check, not a width check, so an
+  iPad with a trackpad or a narrow desktop window keeps it.
 
 ## Fun commands
 
-- Content (fortunes, `top`'s processes, typing snippets) lives in `src/data/fun.ts`.
+- Content (fortunes, `top`'s processes, typing snippets, hangman words) lives in
+  `src/data/fun.ts`.
 - Commands that take over the terminal for a while (`top`, `htop`, `hire nevcan`, `ping`, `sl`,
-  `matrix`, `aquarium`, `typing`) are programs in `src/components/ide/programs/`, one lazy chunk
-  each: nothing is downloaded until someone runs one. q, Esc or Ctrl+C quits (`sl` ignores
-  Ctrl+C, on purpose). Animations respect reduced motion.
+  `matrix`, `aquarium`, `typing`, `snake`, `guess`, `hangman`) are programs in
+  `src/components/ide/programs/`, one lazy chunk each: nothing is downloaded until someone runs
+  one. Animations respect reduced motion.
+- The same keys in every program (`programs/common.tsx`): q, Esc or Ctrl+C quit (where letters
+  are typed, q is a letter, so only Esc and Ctrl+C); Space pauses and, after a game ends, plays
+  again; Enter answers in the games you type into; arrows move. Each shows them with `<Hint>` in
+  the bottom-right corner. `sl` stops for no key at all, on purpose.
 - Pipes work for text: `fortune | cowsay`, `ls | grep exp`. `grep <text> [file|dir]` also
   searches files directly (directories recursively; with no file, everything under the current
   directory). The Konami code (↑↑↓↓←→←→BA) sends

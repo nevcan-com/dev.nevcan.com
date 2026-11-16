@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { processes } from '@/data/fun';
 import { profile } from '@/data/profile';
-import { isQuit, useKeys, useTick, type ProgramProps } from './common';
+import { Hint, isQuit, isSpace, useKeys, useTick, type ProgramProps } from './common';
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
@@ -25,14 +25,23 @@ const bar = (pct: number, width: number) => {
 export default function Top({ name, exit }: ProgramProps) {
   const [rows, setRows] = useState(snapshot);
   const [now, setNow] = useState(() => new Date());
-  useTick(1000, () => {
-    setRows(snapshot());
-    setNow(new Date());
-  });
+  const [paused, setPaused] = useState(false);
+  useTick(
+    1000,
+    () => {
+      setRows(snapshot());
+      setNow(new Date());
+    },
+    !paused,
+  );
   useKeys((e) => {
-    if (!isQuit(e)) return;
-    e.preventDefault();
-    exit();
+    if (isQuit(e)) {
+      e.preventDefault();
+      exit();
+    } else if (isSpace(e)) {
+      e.preventDefault();
+      setPaused((p) => !p);
+    }
   });
 
   const year = now.getFullYear();
@@ -79,7 +88,12 @@ export default function Top({ name, exit }: ProgramProps) {
           <span className={r.state === 'R' ? 't-accent' : undefined}>{r.command}</span>
         </div>
       ))}
-      <div className="prog-hint">q to quit</div>
+      <Hint
+        keys={[
+          ['space', paused ? 'go on' : 'pause'],
+          ['q', 'quit'],
+        ]}
+      />
     </div>
   );
 }

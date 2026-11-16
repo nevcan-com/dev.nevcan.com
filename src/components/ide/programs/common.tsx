@@ -2,6 +2,13 @@
  * Shared bits for terminal programs. A program owns the keyboard while it runs and hands its
  * final output (if any) back with `exit`. Every program is its own lazy chunk (index.ts), so none
  * of this is downloaded until a visitor runs one.
+ *
+ * The same keys everywhere:
+ *   q, Esc, Ctrl+C  quit (where letters are typed, q is a letter: Esc and Ctrl+C only)
+ *   Space           pause / go on; after a game ends, play again
+ *   Enter           answer or next round, in the games you type into (typing, guess, hangman)
+ *   arrows          move (WASD and hjkl too)
+ * One exception, on purpose: `sl` stops for no key at all, like the Unix original.
  */
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { Line, ProgramName } from '@/lib/shell';
@@ -24,8 +31,30 @@ export function useKeys(fn: (e: KeyboardEvent) => void) {
   }, []);
 }
 
-export const isQuit = (e: KeyboardEvent) =>
-  e.key === 'q' || e.key === 'Escape' || (e.ctrlKey && e.key.toLowerCase() === 'c');
+const plain = (e: KeyboardEvent) => !e.ctrlKey && !e.metaKey && !e.altKey;
+
+/** q, Esc or Ctrl+C. `typing`: the program takes letters, so q is one of them and doesn't quit */
+export const isQuit = (e: KeyboardEvent, typing = false) =>
+  e.key === 'Escape' ||
+  (e.ctrlKey && e.key.toLowerCase() === 'c') ||
+  (!typing && e.key === 'q' && plain(e));
+
+/** Space: pause and go on; after a game ends, play again */
+export const isSpace = (e: KeyboardEvent) => e.key === ' ' && plain(e);
+
+/** the key line in a program's bottom-right corner, the same in every program */
+export function Hint({ keys }: { keys: [key: string, what: string][] }) {
+  return (
+    <div className="prog-hint">
+      {keys.map(([k, what], i) => (
+        <span key={k}>
+          {i > 0 && ' · '}
+          <kbd>{k}</kbd> {what}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 

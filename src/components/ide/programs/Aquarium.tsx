@@ -3,7 +3,16 @@
  * second. Our own drawings. With reduced motion it shows one still scene.
  */
 import { useEffect, useRef, useState } from 'react';
-import { isQuit, reducedMotion, useGrid, useKeys, useTick, type ProgramProps } from './common';
+import {
+  Hint,
+  isQuit,
+  isSpace,
+  reducedMotion,
+  useGrid,
+  useKeys,
+  useTick,
+  type ProgramProps,
+} from './common';
 
 /** each fish: [facing right, facing left] */
 const FISH: [string, string][] = [
@@ -39,6 +48,7 @@ export default function Aquarium({ exit }: ProgramProps) {
   const fish = useRef<Fish[]>([]);
   const bubbles = useRef<Bubble[]>([]);
   const still = reducedMotion();
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     if (!cols || !rows) return;
@@ -71,12 +81,16 @@ export default function Aquarium({ exit }: ProgramProps) {
       }
       setT((n) => n + 1);
     },
-    !still,
+    !still && !paused,
   );
   useKeys((e) => {
-    if (!isQuit(e)) return;
-    e.preventDefault();
-    exit();
+    if (isQuit(e)) {
+      e.preventDefault();
+      exit();
+    } else if (isSpace(e) && !still) {
+      e.preventDefault();
+      setPaused((p) => !p);
+    }
   });
 
   // draw the scene into a grid of cells
@@ -137,7 +151,16 @@ export default function Aquarium({ exit }: ProgramProps) {
           );
         })}
       </pre>
-      <div className="prog-hint">q to quit</div>
+      <Hint
+        keys={
+          still
+            ? [['q', 'quit']]
+            : [
+                ['space', paused ? 'go on' : 'pause'],
+                ['q', 'quit'],
+              ]
+        }
+      />
     </div>
   );
 }

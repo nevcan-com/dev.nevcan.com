@@ -1,21 +1,29 @@
 /**
- * `matrix`: falling characters in the terminal panel, on a canvas at ~24 fps. Any key or a click
- * quits. requestAnimationFrame pauses by itself in background tabs; with reduced motion only one
- * still frame is drawn.
+ * `matrix`: falling characters in the terminal panel, on a canvas at ~24 fps. Space pauses, q /
+ * Esc / Ctrl+C quit. requestAnimationFrame pauses by itself in background tabs; with reduced
+ * motion only one still frame is drawn.
  */
-import { useEffect, useRef } from 'react';
-import { reducedMotion, useKeys, type ProgramProps } from './common';
+import { useEffect, useRef, useState } from 'react';
+import { Hint, isQuit, isSpace, reducedMotion, useKeys, type ProgramProps } from './common';
 
 const GLYPHS = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789NEVCAN<>/{}=';
 const SIZE = 15;
 
 export default function Matrix({ exit }: ProgramProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const still = reducedMotion();
+  const [paused, setPaused] = useState(false);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
   useKeys((e) => {
-    if (e.metaKey) return;
-    e.preventDefault();
-    exit();
+    if (isQuit(e)) {
+      e.preventDefault();
+      exit();
+    } else if (isSpace(e) && !still) {
+      e.preventDefault();
+      setPaused((p) => !p);
+    }
   });
 
   useEffect(() => {
@@ -49,14 +57,14 @@ export default function Matrix({ exit }: ProgramProps) {
       });
     };
 
-    if (reducedMotion()) {
+    if (still) {
       for (let i = 0; i < 60; i++) frame();
       return () => ro.disconnect();
     }
     let raf = 0;
     let last = 0;
     const loop = (t: number) => {
-      if (t - last > 42) {
+      if (t - last > 42 && !pausedRef.current) {
         frame();
         last = t;
       }
@@ -67,12 +75,21 @@ export default function Matrix({ exit }: ProgramProps) {
       cancelAnimationFrame(raf);
       ro.disconnect();
     };
-  }, []);
+  }, [still]);
 
   return (
-    <div className="prog-canvas" onClick={() => exit()}>
+    <div className="prog-canvas">
       <canvas ref={canvas} aria-label="Falling green characters" />
-      <div className="prog-hint">any key to quit</div>
+      <Hint
+        keys={
+          still
+            ? [['q', 'quit']]
+            : [
+                ['space', paused ? 'go on' : 'pause'],
+                ['q', 'quit'],
+              ]
+        }
+      />
     </div>
   );
 }

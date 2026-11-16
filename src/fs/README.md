@@ -7,8 +7,10 @@ This site is a small file system. Everything about my work is a file you can ope
 
 ## Two ways to look around
 
-- **Click.** The files are on the left. Open one and it reads like a normal page.
-- **Type.** The terminal below takes real commands: `whoami`, `ls`, `cd`, `cat`. Start with `help`.
+- **Click.** The files are in the explorer: on the left on a computer, behind the files icon at
+  the top left on a phone. Open one and it reads like a normal page.
+- **Type.** On a computer, the terminal below takes real commands: `whoami`, `ls`, `cd`, `cat`.
+  Start with `help`.
 
 ## Where to start
 
