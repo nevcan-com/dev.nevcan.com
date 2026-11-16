@@ -57,3 +57,22 @@ export const snippets: string[] = [
   `if (!consent) return;
 loadAnalytics();`,
 ];
+
+/** `hangman`: one at random. Letters only (anything else is shown as is); the hint is shown. */
+export const words: { word: string; hint: string }[] = [
+  { word: 'kubernetes', hint: 'it runs your containers, and your weekends' },
+  { word: 'idempotent', hint: 'run it twice, same result' },
+  { word: 'refactor', hint: 'same behaviour, better code' },
+  { word: 'semaphore', hint: 'only so many at a time' },
+  { word: 'hydration', hint: 'server HTML comes alive in the browser' },
+  { word: 'debounce', hint: 'wait until they stop typing' },
+  { word: 'monorepo', hint: 'every project, one repository' },
+  { word: 'regression', hint: 'it worked yesterday' },
+  { word: 'middleware', hint: 'between the request and the response' },
+  { word: 'accessibility', hint: 'a11y, spelled out' },
+  { word: 'typescript', hint: 'JavaScript that checks your types' },
+  { word: 'deadlock', hint: 'two of them, each waiting for the other' },
+  { word: 'websocket', hint: 'a connection that stays open' },
+  { word: 'algorithm', hint: 'a recipe for a computer' },
+  { word: 'recursion', hint: 'see: recursion' },
+];

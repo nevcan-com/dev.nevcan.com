@@ -17,4 +17,7 @@ export const PROGRAMS: Record<ProgramName, { full: boolean; C: ComponentType<Pro
   matrix: { full: true, C: lazy(() => import('./Matrix')) },
   aquarium: { full: true, C: lazy(() => import('./Aquarium')) },
   typing: { full: true, C: lazy(() => import('./Typing')) },
+  snake: { full: true, C: lazy(() => import('./Snake')) },
+  guess: { full: true, C: lazy(() => import('./Guess')) },
+  hangman: { full: true, C: lazy(() => import('./Hangman')) },
 };

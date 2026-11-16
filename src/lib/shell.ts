@@ -37,7 +37,17 @@ export type Effect =
   | { type: 'program'; name: ProgramName; args: string[] };
 
 export type ProgramName =
-  'top' | 'htop' | 'hire' | 'sl' | 'ping' | 'matrix' | 'aquarium' | 'typing';
+  | 'top'
+  | 'htop'
+  | 'hire'
+  | 'sl'
+  | 'ping'
+  | 'matrix'
+  | 'aquarium'
+  | 'typing'
+  | 'snake'
+  | 'guess'
+  | 'hangman';
 
 export interface Result {
   lines: Line[];
@@ -300,7 +310,10 @@ function grep(args: string[], ctx: Ctx): Line[] {
 const CATEGORIES: [string, string[]][] = [
   ['Get around', ['ls', 'cd', 'pwd', 'tree', 'open', 'cat', 'grep']],
   ['About me', ['whoami', 'git log', 'contact', 'hire', 'top']],
-  ['Just for fun', ['fortune', 'neofetch', 'matrix', 'aquarium', 'typing']],
+  [
+    'Just for fun',
+    ['fortune', 'neofetch', 'matrix', 'aquarium', 'typing', 'snake', 'guess', 'hangman'],
+  ],
   ['Terminal', ['help', 'history', 'clear', 'cookies', 'exit']],
 ];
 
@@ -653,6 +666,18 @@ export const COMMANDS: Record<string, Cmd> = {
   typing: {
     desc: 'how fast do you type code?',
     fn: (_, ctx) => program(ctx, 'typing'),
+  },
+  snake: {
+    desc: 'eat the braces, mind the walls (q quits)',
+    fn: (_, ctx) => program(ctx, 'snake'),
+  },
+  guess: {
+    desc: 'find the hidden commit hash',
+    fn: (_, ctx) => program(ctx, 'guess'),
+  },
+  hangman: {
+    desc: 'guess the tech word before the servers burn',
+    fn: (_, ctx) => program(ctx, 'hangman'),
   },
   history: {
     desc: 'what you typed',
