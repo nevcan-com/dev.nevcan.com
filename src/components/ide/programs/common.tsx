@@ -5,7 +5,8 @@
  *
  * The same keys everywhere:
  *   q, Esc, Ctrl+C  quit (where letters are typed, q is a letter: Esc and Ctrl+C only)
- *   Space           in games: pause / go on; after a game ends, play again
+ *   Space           in games and the film: pause / go on; at the end, play again
+ *   ← →             step through the film (nev-career)
  *   Enter           answer or next round, in the games you type into (typing, guess, hangman)
  *   arrows          move (WASD and hjkl too)
  * Programs that print into the scrollback (ping, hire) stop only for Ctrl+C, like the real ones:

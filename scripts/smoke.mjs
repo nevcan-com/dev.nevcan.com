@@ -299,6 +299,51 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     await p.lastLine(),
   );
 
+  // the film: plays, Space pauses, q prints the whole graph with HEAD on the newest role
+  await p.run('nev-career');
+  check(
+    'nev-career plays',
+    (await p.running()) && /space pause/.test(await p.hint()),
+    await p.hint(),
+  );
+  await p.key(' ');
+  check('nev-career: Space pauses', /space play/.test(await p.hint()), await p.hint());
+  await p.key('q');
+  const graph = await p.ev(
+    `[...document.querySelectorAll('.term-out .t-line')].map(l => l.textContent).join('\\n')`,
+  );
+  check(
+    'nev-career: q prints the graph, HEAD on the newest role',
+    !(await p.running()) && /HEAD -> main/.test(graph) && /Merge branch 'diving'/.test(graph),
+  );
+
+  await p.run('git lg');
+  const lg = await p.ev(
+    `[...document.querySelectorAll('.term-out .t-line')].slice(-3).map(l => l.textContent).join('\\n')`,
+  );
+  check(
+    'git lg prints the graph newest first, in the alias format',
+    /^\*\s+[0-9a-f]{7} \| /m.test(lg) && /\[Nevcan Uludaş\]/.test(lg),
+    lg,
+  );
+
+  // the explorer: some folders start closed; the button by the root closes or opens them all
+  const openDirs = () =>
+    p.ev(`document.querySelectorAll('.explorer [aria-expanded="true"]').length`);
+  const closedAtStart = await p.ev(
+    `['legal', 'media', 'projects', 'trainings', 'diving'].every(n => [...document.querySelectorAll('.explorer [aria-expanded="false"]')].some(li => li.textContent.trim().startsWith(n)))`,
+  );
+  check('legal, media, projects, trainings and diving start closed', closedAtStart);
+  await p.ev(`document.querySelector('.tree-root .icon-btn').click()`);
+  await sleep(200);
+  check('the root button collapses every folder', (await openDirs()) === 0, await openDirs());
+  await p.ev(`document.querySelector('.tree-root .icon-btn').click()`);
+  await sleep(200);
+  check(
+    'pressed again, it opens them all',
+    (await p.ev(`document.querySelectorAll('.explorer [aria-expanded="false"]').length`)) === 0,
+  );
+
   // colour themes: a preview saves nothing, only a pick does (notes/legal.md, item 12)
   const stored = () => p.ev(`localStorage.getItem('dev-theme')`);
   const theme = () => p.ev(`document.documentElement.dataset.theme ?? 'default'`);

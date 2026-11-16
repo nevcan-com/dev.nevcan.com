@@ -50,6 +50,7 @@ export type ProgramName =
   | 'aquarium'
   | 'typing'
   | 'snake'
+  | 'career'
   | 'guess'
   | 'hangman';
 
@@ -198,6 +199,110 @@ const program = (ctx: Ctx, name: ProgramName, args: string[] = []): Line[] => {
   return [];
 };
 
+/**
+ * `nev-career` / `git log --graph`: the career as a git graph, oldest first. Software is `main`
+ * (experience/*.md), diving a `diving` branch (experience/diving/*.md); a few milestones that have
+ * no file of their own come from MILESTONES. Each row keeps its year, for the film's counter.
+ */
+export interface CareerRow {
+  year: number;
+  line: Line;
+}
+type CareerEvent = {
+  year: number;
+  branch: 'main' | 'diving' | 'merge';
+  title: string;
+  path: string;
+  tag?: string;
+  /** same year: lower goes first */
+  order?: number;
+};
+const MILESTONES: CareerEvent[] = [
+  { year: 2008, branch: 'diving', title: 'Started diving · OGÜSEA', path: 'education.md' },
+  {
+    year: 2011,
+    branch: 'diving',
+    title: 'Diving instructor',
+    path: 'about/whoami.md',
+    tag: 'instructor',
+  },
+  {
+    year: 2025,
+    branch: 'merge',
+    title: "Merge branch 'diving': MA, underwater cultural heritage",
+    path: 'education.md',
+    order: -1,
+  },
+];
+/** a stable, git-looking short hash */
+const shortHash = (s: string) => {
+  let h = 2166136261;
+  for (const ch of s) h = Math.imul(h ^ ch.codePointAt(0)!, 16777619);
+  return (h >>> 0).toString(16).padStart(8, '0').slice(0, 7);
+};
+/** `git lg`: the same graph the way git prints it, newest first (so the branch lines flip) */
+export function careerLog(vfs: Vfs): Line[] {
+  const flip: Record<string, string> = { '\\': '/', '/': '\\' };
+  return careerGraph(vfs)
+    .reverse()
+    .map((r) => r.line.map((s) => (flip[s.t] ? { ...s, t: flip[s.t]! } : s)));
+}
+export function careerGraph(vfs: Vfs): CareerRow[] {
+  const fromDir = (dir: string, branch: 'main' | 'diving'): CareerEvent[] =>
+    listDir(vfs, dir)
+      .filter((e) => e.type === 'file' && /^\d{4}/.test(e.name))
+      .map((e) => ({ year: +e.name.slice(0, 4), branch, title: vfs[e.path]!.title, path: e.path }));
+  const events = [
+    ...fromDir('experience', 'main'),
+    ...fromDir('experience/diving', 'diving'),
+    ...MILESTONES,
+  ].sort((a, b) => a.year - b.year || (a.order ?? 0) - (b.order ?? 0));
+  const lastMain = events.filter((e) => e.branch !== 'diving').at(-1);
+  const lastDiving = events.filter((e) => e.branch === 'diving').at(-1);
+
+  const M = (t: string): Seg => txt(t, 'accent');
+  const D = (t: string): Seg => txt(t, 'dir');
+  const rows: CareerRow[] = [];
+  let open = false; // the diving branch is drawn
+  const commit = (graph: Seg[], e: CareerEvent) => {
+    const refs = [
+      e === lastMain ? 'HEAD -> main' : '',
+      e === lastDiving ? 'diving' : '',
+      e.tag ? `tag: ${e.tag}` : '',
+    ].filter(Boolean);
+    // Nev's own `git lg` alias: %Cred%h | %C(yellow)%d %s %Cgreen(%cr) %C(cyan)[%an]
+    const ago = new Date().getFullYear() - e.year;
+    rows.push({
+      year: e.year,
+      line: [
+        ...graph,
+        txt(shortHash(e.title + e.year), 'err'),
+        txt(' | '),
+        ...(refs.length ? [txt(` (${refs.join(', ')})`, 'cmd')] : []),
+        txt(' '),
+        { t: e.title, c: 'file', run: `open ~/${quote(e.path)}` },
+        txt(
+          ` (${ago === 0 ? 'this year' : ago === 1 ? '1 year ago' : `${ago} years ago`})`,
+          'accent',
+        ),
+        txt(` [${profile.name}]`, 'dir'),
+      ],
+    });
+  };
+  for (const e of events) {
+    if (e.branch === 'diving') {
+      if (!open) rows.push({ year: e.year, line: [M('|'), D('\\')] });
+      open = true;
+      commit([M('| '), D('* ')], e);
+    } else if (e.branch === 'merge') {
+      if (open) rows.push({ year: e.year, line: [M('|'), D('/')] });
+      open = false;
+      commit([M('*   ')], e);
+    } else commit(open ? [M('* '), D('| ')] : [M('*   ')], e);
+  }
+  return rows;
+}
+
 /** wraps text to a speech bubble, with a cow of our own drawing */
 function cowsay(text: string): Line[] {
   const words = text.replace(/\s+/g, ' ').trim().split(' ');
@@ -327,7 +432,7 @@ function grep(args: string[], ctx: Ctx): Line[] {
 /** `help`: commands by what they're for, in the order a visitor needs them */
 const CATEGORIES: [string, string[]][] = [
   ['Get around', ['ls', 'cd', 'pwd', 'tree', 'open', 'cat', 'grep']],
-  ['About me', ['whoami', 'git log', 'contact', 'hire', 'top']],
+  ['About me', ['whoami', 'git log', 'git lg', 'nev-career', 'contact', 'hire', 'top']],
   [
     'Just for fun',
     ['fortune', 'neofetch', 'matrix', 'aquarium', 'typing', 'snake', 'guess', 'hangman'],
@@ -360,7 +465,7 @@ const SECRET_DESC: Record<string, string> = {
   date: "today's date",
   hostname: 'where you are',
   uname: 'what this runs on',
-  git: 'git status, git log',
+  git: 'git status (or st), git log, git lg',
   dive: 'the other subdomain',
   hello: 'say hi',
   hi: 'say hi',
@@ -552,21 +657,32 @@ export const COMMANDS: Record<string, Cmd> = {
       return [[txt(displayPath(p), 'dir')], ...treeLines(ctx, p)];
     },
   },
+  'nev-career': {
+    desc: 'twenty years as a git graph: a short film',
+    fn: (_, ctx) => program(ctx, 'career', [JSON.stringify(careerGraph(ctx.vfs))]),
+  },
   'git log': {
     desc: 'career history, as commits',
-    fn: (_, ctx) =>
-      listDir(ctx.vfs, 'experience')
-        .filter((e) => e.type === 'file')
-        .reverse()
-        .flatMap((e, i) => {
-          const f = ctx.vfs[e.path]!;
-          const year = e.name.match(/^\d{4}/)?.[0] ?? '';
-          return [
-            line(txt(`commit ${year}`, 'accent'), i === 0 ? txt(' (HEAD -> main)', 'dir') : ''),
-            line('    ', { t: f.title, c: 'link-cmd', run: `open ~/${quote(e.path)}` }),
-            [],
-          ];
-        }),
+    usage: 'git log [--graph]',
+    fn: (args, ctx) =>
+      args.includes('--graph')
+        ? careerLog(ctx.vfs)
+        : listDir(ctx.vfs, 'experience')
+            .filter((e) => e.type === 'file')
+            .reverse()
+            .flatMap((e, i) => {
+              const f = ctx.vfs[e.path]!;
+              const year = e.name.match(/^\d{4}/)?.[0] ?? '';
+              return [
+                line(txt(`commit ${year}`, 'accent'), i === 0 ? txt(' (HEAD -> main)', 'dir') : ''),
+                line('    ', { t: f.title, c: 'link-cmd', run: `open ~/${quote(e.path)}` }),
+                [],
+              ];
+            }),
+  },
+  'git lg': {
+    desc: 'the same, as a graph (my own git alias)',
+    fn: (_, ctx) => careerLog(ctx.vfs),
   },
   neofetch: {
     desc: 'the system, at a glance',
@@ -783,7 +899,8 @@ export const COMMANDS: Record<string, Cmd> = {
     desc: '',
     hidden: true,
     fn: (args, ctx) => {
-      if (args[0] === 'status')
+      if (args[0] === 'lg') return COMMANDS['git lg']!.fn(args.slice(1), ctx);
+      if (args[0] === 'status' || args[0] === 'st')
         return [[txt('On branch main')], [txt('nothing to commit, working tree clean')]];
       if (args[0] === 'log') return COMMANDS['git log']!.fn(args.slice(1), ctx);
       return err('git: this repository is read-only. Try git log.');

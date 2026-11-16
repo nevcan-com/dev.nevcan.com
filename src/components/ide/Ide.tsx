@@ -98,6 +98,8 @@ const ICON = {
   github:
     'M7 4.5v10M7 14.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM7 4.5a0 0 0 0 0 0 0M17 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17 9.5c0 4-10 2-10 5',
   md: 'M3.5 6.5h17v11h-17zM6.5 14.5v-5l2 2.5 2-2.5v5M15.5 9.5v5M13.5 12.5l2 2 2-2',
+  collapseAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5',
+  expandAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5M10 11.25v5',
   theme:
     'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM12 3.5v17M12 7h5M12 10.5h6.5M12 14h6.5M12 17.5h4.5',
 };
@@ -197,7 +199,7 @@ function bubbles() {
 }
 
 /** folders that start closed in the explorer: there to be found, not pointed at */
-const FOUND_LATER = ['legal', 'media', 'projects', 'experience/diving'];
+const FOUND_LATER = ['legal', 'media', 'projects', 'trainings', 'experience/diving'];
 /** a path's folders, outermost first: 'a/b/c.md' → ['a', 'a/b'] */
 const ancestors = (p: string) =>
   p
@@ -513,6 +515,9 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     }
     a.click();
   };
+  /** the button by the root: close every folder, or (when all are closed) open them all */
+  const toggleAllDirs = () =>
+    setExpanded((x) => (x.size ? new Set() : new Set(Object.keys(vfs).flatMap(ancestors))));
   const toggleDir = (d: string) =>
     setExpanded((s) => {
       const n = new Set(s);
@@ -750,7 +755,18 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
               <Icon d={ICON.close} />
             </button>
           </div>
-          <p className="tree-root">nevcan</p>
+          <div className="tree-root">
+            <span>dev.nevcan.com</span>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={toggleAllDirs}
+              title={expanded.size ? 'Collapse folders' : 'Expand folders'}
+              aria-label={expanded.size ? 'Collapse folders' : 'Expand folders'}
+            >
+              <Icon d={expanded.size ? ICON.collapseAll : ICON.expandAll} />
+            </button>
+          </div>
           <Tree
             vfs={vfs}
             dir=""

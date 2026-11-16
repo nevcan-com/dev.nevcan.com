@@ -59,7 +59,7 @@ Add a check when something breaks, so it can't break the same way twice.
   without JavaScript and by search engines. Clicking around updates the URL; back/forward work.
 - Clicks in the explorer and the preview run through the shell (`open ~/…`), so the terminal shows
   the command for what the visitor just did.
-- The explorer starts with `legal`, `media`, `projects` and `experience/diving` closed (`FOUND_LATER` in
+- The explorer starts with `legal`, `media`, `projects`, `trainings` and `experience/diving` closed (`FOUND_LATER` in
   `Ide.tsx`): they're there to be found, not pointed at. A page opened in one of them opens it.
 - Panels default to `auto`: on desktop the explorer and terminal are open; on phones the reader
   comes first and the explorer is a drawer.
@@ -80,6 +80,10 @@ Add a check when something breaks, so it can't break the same way twice.
   again; Enter answers in the games you type into; arrows move. Each shows them with `<Hint>` in
   the bottom-right corner. Programs that print into the scrollback (`ping`, `hire`) stop only
   for Ctrl+C, like the real ones. `sl` stops for no key at all, on purpose.
+- `nev-career` (or `git log --graph`) plays the career as a git graph: `main` is
+  `experience/*.md`, a `diving` branch is `experience/diving/*.md`, and the few milestones without
+  a file are `MILESTONES` in `shell.ts`. A new file in either folder shows up in the film by
+  itself.
 - Pipes work for text: `fortune | cowsay`, `ls | grep exp`. `grep <text> [file|dir]` also
   searches files directly (directories recursively; with no file, everything under the current
   directory). The Konami code (↑↑↓↓←→←→BA) sends
