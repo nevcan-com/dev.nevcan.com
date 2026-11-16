@@ -87,6 +87,19 @@ Add a check when something breaks, so it can't break the same way twice.
 - The 404 page is `CrashView.tsx`: a fake runtime error with a "Did you mean" for the closest
   real page.
 
+## Colour themes
+
+- Every palette lives in `src/data/themes.ts`; `Base.astro` writes them as CSS (`:root` is the
+  default, the others go by `data-theme` on `<html>`). Colours in `ide.css` are tokens or
+  `color-mix()` of tokens; add a theme by adding a palette, nothing else.
+- Picked from the icon under GitHub in the activity bar (the title bar on phones), from the
+  right-click menu, or with `theme <name>`. ↑ ↓ preview live without saving; Enter or a click
+  picks.
+- A pick is stored in localStorage (`dev-theme`, 12 months) only when the visitor makes it;
+  picking the default removes the entry (`notes/legal.md`, item 12). An inline script in
+  `Base.astro` applies it before the first paint, so the page never flashes the default.
+- Keep small text at WCAG AA (4.5:1) on the editor background when adding or changing a palette.
+
 ## Right-click menu
 
 `ContextMenu.tsx`, with items chosen in `Ide.tsx` by what was clicked (a file or folder in the

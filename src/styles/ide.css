@@ -1,25 +1,15 @@
 /* dev.nevcan.com: one editor window. The accent is the brand mint from the N favicon. */
 
 :root {
-  --bg: #0b0f14;
-  --chrome: #0e131a;
-  --panel: #10161e;
-  --panel-2: #141b24;
-  --hover: #1a232e;
-  --line: #1f2934;
-  --text: #d7dee7;
-  --text-strong: #f3f6f9;
-  --muted: #7f8c9b;
-  --faint: #4f5b68;
-  --accent: #6ff7e0;
-  --accent-dim: rgb(111 247 224 / 0.14);
-  --dir: #8ab4ff;
-  --err: #ff7b72;
-  --warm: #ffcf7a;
+  /* colours: src/data/themes.ts (Base.astro writes them per theme); these follow from them */
+  --accent-dim: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-soft: color-mix(in srgb, var(--accent) 35%, transparent);
+  --err-dim: color-mix(in srgb, var(--err) 13%, transparent);
+  --warm-dim: color-mix(in srgb, var(--warm) 14%, transparent);
+  --tint: color-mix(in srgb, var(--text) 3%, transparent);
   --mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
   --sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --radius: 10px;
-  color-scheme: dark;
 }
 
 *,
@@ -53,7 +43,7 @@ button {
 }
 
 ::selection {
-  background: rgb(111 247 224 / 0.28);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 /* ---------- window ---------- */
@@ -363,7 +353,7 @@ button {
   padding: 0.45rem 0.9rem;
   border-radius: 7px;
   background: var(--accent);
-  color: #062420;
+  color: var(--on-accent);
   font-weight: 600;
   font-size: 0.85rem;
 }
@@ -409,7 +399,7 @@ button {
 .prose a {
   color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: rgb(111 247 224 / 0.35);
+  text-decoration-color: var(--accent-soft);
   text-underline-offset: 3px;
 }
 .prose a:hover {
@@ -466,7 +456,7 @@ button {
   display: flex;
 }
 .src-row:hover {
-  background: rgb(255 255 255 / 0.025);
+  background: var(--tint);
 }
 .src-ln {
   flex: none;
@@ -654,7 +644,7 @@ button {
   font-weight: 600;
 }
 .t-match {
-  color: #1b1405;
+  color: var(--on-warm);
   background: var(--warm);
   border-radius: 2px;
 }
@@ -665,7 +655,7 @@ button {
 .t-link-cmd {
   color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: rgb(111 247 224 / 0.35);
+  text-decoration-color: var(--accent-soft);
   text-underline-offset: 3px;
 }
 .t-chip {
@@ -766,7 +756,7 @@ button {
   }
   .ide[data-explorer='open'] .explorer {
     transform: none;
-    box-shadow: 0 0 40px rgb(0 0 0 / 0.5);
+    box-shadow: 0 0 40px var(--shadow);
   }
   .scrim {
     position: fixed;
@@ -840,6 +830,15 @@ button {
   height: 15px;
 }
 
+/* the links (Privacy, Terms, Cookies) never shrink or leave the screen; a note gives way */
+.sb-link {
+  flex: none;
+}
+.sb-note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sb-link {
   color: inherit;
   text-decoration: none;
@@ -859,7 +858,7 @@ button {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background:
-    repeating-conic-gradient(rgb(255 255 255 / 0.035) 0 25%, transparent 0 50%) 0 0 / 20px 20px,
+    repeating-conic-gradient(var(--tint) 0 25%, transparent 0 50%) 0 0 / 20px 20px,
     var(--panel);
   color: var(--text-strong);
 }
@@ -934,7 +933,7 @@ button {
   margin-right: 0.6rem;
   padding: 0.05rem 0.45rem;
   border-radius: 999px;
-  background: rgb(255 207 122 / 0.14);
+  background: var(--warm-dim);
   color: var(--warm);
   font-family: var(--mono);
   font-size: 0.65rem;
@@ -1039,8 +1038,8 @@ button {
   transition: transform 0.15s;
 }
 .cc-switch:checked {
-  background: rgb(111 247 224 / 0.35);
-  border-color: rgb(111 247 224 / 0.6);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
 }
 .cc-switch:checked::after {
   transform: translate(1.1rem, -50%);
@@ -1065,7 +1064,7 @@ button {
 }
 .cc-btn:hover {
   border-color: var(--faint);
-  background: #212c38;
+  background: color-mix(in srgb, var(--hover), var(--text) 6%);
 }
 
 /* narrower screens: the group moves under the editor, like a panel */
@@ -1144,7 +1143,7 @@ button {
 }
 .top-head {
   background: var(--accent);
-  color: #062420;
+  color: var(--on-accent);
   width: max-content;
   min-width: 100%;
 }
@@ -1244,7 +1243,7 @@ button {
   color: var(--accent);
 }
 .ty-bad {
-  color: #1a0f0f;
+  color: var(--on-err);
   background: var(--err);
   border-radius: 2px;
 }
@@ -1278,11 +1277,11 @@ button {
   position: absolute;
   bottom: -40px;
   border-radius: 50%;
-  border: 1.5px solid rgb(111 247 224 / 0.7);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 70%, transparent);
   background: radial-gradient(
     circle at 30% 30%,
     rgb(255 255 255 / 0.5),
-    rgb(111 247 224 / 0.08) 60%
+    color-mix(in srgb, var(--accent) 8%, transparent) 60%
   );
   animation: bubble-up linear forwards;
 }
@@ -1376,7 +1375,7 @@ button {
 .crash-badge {
   padding: 0.15rem 0.55rem;
   border-radius: 5px;
-  background: rgb(255 123 114 / 0.14);
+  background: var(--err-dim);
   color: var(--err);
   font-family: var(--mono);
   font-size: 0.75rem;
@@ -1419,7 +1418,7 @@ button {
   display: block;
   margin: 0 -1rem;
   padding: 0 1rem;
-  background: rgb(255 123 114 / 0.12);
+  background: var(--err-dim);
   color: var(--text-strong);
 }
 .crash-line > span {
@@ -1466,6 +1465,82 @@ button {
   font-weight: 500;
 }
 
+/* ---------- colour theme picker ---------- */
+
+.theme-pick {
+  position: fixed;
+  z-index: 61;
+  top: 46px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100vw - 32px));
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  box-shadow: 0 16px 40px var(--shadow);
+  font-size: 0.85rem;
+}
+.theme-pick-title {
+  margin: 0.2rem 0.5rem 0.4rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.theme-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border-radius: 6px;
+  text-align: left;
+  color: var(--text);
+}
+.theme-opt:hover,
+.theme-opt.focused {
+  background: var(--accent-dim);
+  color: var(--text-strong);
+}
+.theme-opt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.theme-swatch {
+  display: inline-flex;
+  gap: 3px;
+  padding: 4px 5px;
+  border: 1px solid;
+  border-radius: 5px;
+}
+.theme-swatch i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.theme-name {
+  flex: 1;
+}
+.theme-note {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.theme-check {
+  color: var(--accent);
+}
+.theme-pick-foot {
+  margin: 0.4rem 0.5rem 0.2rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.theme-pick-foot strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 /* ---------- right-click menu ---------- */
 
 .ctx-menu {
@@ -1476,7 +1551,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel-2);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.5);
+  box-shadow: 0 12px 32px var(--shadow);
   font-size: 0.82rem;
 }
 .ctx-item {
@@ -1520,7 +1595,7 @@ button {
   line-height: 1;
   letter-spacing: -0.04em;
   color: var(--err);
-  text-shadow: 0 0 40px rgb(255 123 114 / 0.25);
+  text-shadow: 0 0 40px color-mix(in srgb, var(--err) 25%, transparent);
 }
 .crash-human {
   margin: 0.4rem 0 0.5rem;

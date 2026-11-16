@@ -8,6 +8,7 @@
  */
 import { profile } from '@/data/profile';
 import { fortunes } from '@/data/fun';
+import { DEFAULT_THEME, THEMES, themeById } from '@/data/themes';
 import { HOME, basename, displayPath, isDir, isFile, listDir, resolvePath, type Vfs } from './vfs';
 
 export interface Seg {
@@ -33,6 +34,8 @@ export type Effect =
   | { type: 'clear' }
   | { type: 'terminal'; state: 'closed' }
   | { type: 'cookies' }
+  /** pick a colour theme (and save it on this device) */
+  | { type: 'theme'; id: string }
   /** a program that takes over the terminal for a while (lazy-loaded: programs/index.ts) */
   | { type: 'program'; name: ProgramName; args: string[] };
 
@@ -314,7 +317,7 @@ const CATEGORIES: [string, string[]][] = [
     'Just for fun',
     ['fortune', 'neofetch', 'matrix', 'aquarium', 'typing', 'snake', 'guess', 'hangman'],
   ],
-  ['Terminal', ['help', 'history', 'clear', 'cookies', 'exit']],
+  ['Terminal', ['help', 'history', 'clear', 'theme', 'cookies', 'exit']],
 ];
 
 /** what `help --all` and `man` say about the hidden commands */
@@ -597,6 +600,41 @@ export const COMMANDS: Record<string, Cmd> = {
         }),
       ),
     ],
+  },
+  theme: {
+    desc: 'colour theme',
+    usage: 'theme [name]',
+    fn: (args, ctx) => {
+      const name = args[0]?.toLowerCase();
+      if (!name) {
+        const now =
+          typeof document === 'undefined' ? undefined : document.documentElement.dataset.theme;
+        const current = themeById(now) ?? DEFAULT_THEME;
+        return [
+          ...THEMES.map((t) =>
+            line(
+              txt(t === current ? '* ' : '  ', 'accent'),
+              { t: t.id.padEnd(16), c: 'cmd', run: `theme ${t.id}` },
+              txt(
+                t.label + (t === DEFAULT_THEME ? ' (default)' : '') + (t.light ? ', light' : ''),
+                'muted',
+              ),
+            ),
+          ),
+          muted('theme <name> picks one and saves it on this device.'),
+        ];
+      }
+      const t = themeById(name === 'default' || name === 'reset' ? DEFAULT_THEME.id : name);
+      if (!t) return err(`theme: ${name}: no such theme. Try: theme`);
+      ctx.effects.push({ type: 'theme', id: t.id });
+      return [
+        line(
+          txt('Theme: '),
+          txt(t.label, 'accent'),
+          txt(t === DEFAULT_THEME ? '. Back to the default.' : '. Saved on this device.', 'muted'),
+        ),
+      ];
+    },
   },
   cookies: {
     desc: 'cookie settings',

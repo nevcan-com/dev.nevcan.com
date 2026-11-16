@@ -82,7 +82,8 @@ export default function CookiePane({ required, analytics, onChoose, onClose, onO
             <div>
               <p className="cc-name">Necessary</p>
               <p className="cc-desc">
-                Remembers your choice here, in your browser. Needs no consent.
+                Remembers your choices here (cookie choice, colour theme), in your browser. Needs no
+                consent.
               </p>
             </div>
             <span className="cc-always">Always on</span>

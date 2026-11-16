@@ -1,6 +1,6 @@
 # Cookies
 
-_Last updated 15 November 2026_
+_Last updated 16 November 2026_
 
 This site stores very little in your browser. Analytics cookies are set only after you choose
 "Accept"; nothing else needs your consent.
@@ -8,6 +8,7 @@ This site stores very little in your browser. Analytics cookies are set only aft
 | Name               | Type          | What for                                    | How long  | Consent    |
 | ------------------ | ------------- | ------------------------------------------- | --------- | ---------- |
 | dev-consent        | local storage | Remembers your cookie choice                | 12 months | Not needed |
+| dev-theme          | local storage | Remembers the colour theme you picked       | 12 months | Not needed |
 | dev_ga             | cookie        | Google Analytics: tells visitors apart      | 2 years   | Yes        |
 | dev_ga\_&lt;id&gt; | cookie        | Google Analytics: keeps the session's state | 2 years   | Yes        |
 

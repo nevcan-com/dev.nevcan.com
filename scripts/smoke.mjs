@@ -117,6 +117,8 @@ async function open({ touch = false } = {}) {
 
   const KEYS = {
     Escape: { code: 'Escape', keyCode: 27 },
+    ArrowDown: { code: 'ArrowDown', keyCode: 40 },
+    ArrowUp: { code: 'ArrowUp', keyCode: 38 },
     Enter: { code: 'Enter', keyCode: 13, text: '\r' },
     ' ': { code: 'Space', keyCode: 32, text: ' ' },
   };
@@ -163,7 +165,13 @@ async function open({ touch = false } = {}) {
     await sleep(300);
     rmSync(profile, { recursive: true, force: true });
   };
-  return { ev, key, run, running, hint, lastLine, pane, reject, exceptions, close };
+  const reload = async () => {
+    await send('Page.reload');
+    for (let i = 0; i < 50 && !(await ev(`!!document.querySelector('.statusbar')`)); i++)
+      await sleep(200);
+    await sleep(500);
+  };
+  return { ev, key, run, running, hint, lastLine, pane, reject, reload, exceptions, close };
 }
 
 // ---------- desktop ----------
@@ -269,6 +277,51 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     await p.lastLine(),
   );
 
+  // colour themes: a preview saves nothing, only a pick does (notes/legal.md, item 12)
+  const stored = () => p.ev(`localStorage.getItem('dev-theme')`);
+  const theme = () => p.ev(`document.documentElement.dataset.theme ?? 'default'`);
+  const openPicker = async () => {
+    await p.ev(`document.querySelector('.act-btn[aria-label="Colour theme"]').click()`);
+    await sleep(300);
+  };
+  check('no theme stored before a pick', (await stored()) === null, await stored());
+  await openPicker();
+  check(
+    'the picker says picks are saved on this device',
+    /Saved on this device/.test(
+      await p.ev(`document.querySelector('.theme-pick')?.textContent ?? ''`),
+    ),
+  );
+  await p.key('ArrowDown');
+  check('↓ previews the next theme', (await theme()) === 'one-dark', await theme());
+  check('a preview stores nothing', (await stored()) === null, await stored());
+  await p.key('Escape');
+  check('Esc goes back to the theme you had', (await theme()) === 'default', await theme());
+  check('Esc stores nothing', (await stored()) === null, await stored());
+  await openPicker();
+  await p.key('ArrowDown');
+  await p.key('ArrowDown');
+  await p.key('Enter');
+  check(
+    'Enter picks and stores it',
+    JSON.parse((await stored()) ?? '{}').id === 'dracula',
+    await stored(),
+  );
+  await p.reload();
+  check('a picked theme is there after a reload', (await theme()) === 'dracula', await theme());
+  await p.run('theme github-light');
+  check(
+    '`theme github-light` picks it',
+    (await theme()) === 'github-light' && /github-light/.test(await stored()),
+    await stored(),
+  );
+  await p.run('theme default');
+  check(
+    '`theme default` goes back and removes the entry',
+    (await theme()) === 'default' && (await stored()) === null,
+    await stored(),
+  );
+
   check('no exceptions', p.exceptions.length === 0, p.exceptions);
   await p.close();
 }
@@ -285,10 +338,17 @@ console.log('\ntouch-only');
   await p.reject();
   check('no terminal', !(await shown('.terminal')));
   check('no terminal button in the title bar', !(await shown('.tb-term')));
+  check('a theme button in the title bar', await shown('.tb-btn[aria-label="Colour theme"]'));
   check('the status bar says the terminal needs a keyboard', await shown('.only-touch'));
   check(
     'commands in the text are not runnable',
     (await p.ev(`document.querySelectorAll('code.runnable').length`)) === 0,
+  );
+  check(
+    'every status bar link fits on the screen (Cookies too)',
+    await p.ev(
+      `[...document.querySelectorAll('.statusbar .sb-link')].every(l => { const r = l.getBoundingClientRect(); return r.width > 0 && r.right <= innerWidth })`,
+    ),
   );
   check('no exceptions', p.exceptions.length === 0, p.exceptions);
   await p.close();

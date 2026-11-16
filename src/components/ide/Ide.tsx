@@ -19,6 +19,9 @@ import {
 import Terminal, { type TermItem, type TerminalHandle } from './Terminal';
 import SourceView from './SourceView';
 import CookiePane from './CookiePane';
+import ThemePicker from './ThemePicker';
+import { pickTheme } from '@/lib/theme';
+import { themeById } from '@/data/themes';
 import CrashView from './CrashView';
 import ContextMenu, { type MenuItem } from './ContextMenu';
 import { applyChoice, readChoice, saveChoice } from '@/components/consent/consent';
@@ -95,6 +98,8 @@ const ICON = {
   github:
     'M7 4.5v10M7 14.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM7 4.5a0 0 0 0 0 0 0M17 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17 9.5c0 4-10 2-10 5',
   md: 'M3.5 6.5h17v11h-17zM6.5 14.5v-5l2 2.5 2-2.5v5M15.5 9.5v5M13.5 12.5l2 2 2-2',
+  theme:
+    'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM12 3.5v17M12 7h5M12 10.5h6.5M12 14h6.5M12 17.5h4.5',
 };
 
 function Tree({
@@ -216,6 +221,8 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   const [shell, setShell] = useState<ShellState>({ cwd: '', prev: '', history: [] });
   /** the cookie pane: null = closed; required = first visit, closes only with a choice */
   const [cookiePane, setCookiePane] = useState<{ required: boolean } | null>(null);
+  /** the colour theme picker (ThemePicker.tsx) */
+  const [themePick, setThemePick] = useState(false);
   const [consent, setConsent] = useState(false);
   const shellRef = useRef(shell);
   shellRef.current = shell;
@@ -266,6 +273,10 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
         if (e.type === 'program') {
           setProgram({ id: nextId++, name: e.name, args: e.args });
           setTerm((t) => (t === 'closed' || (t === 'auto' && isMobile()) ? 'open' : t));
+        }
+        if (e.type === 'theme') {
+          const t = themeById(e.id);
+          if (t) pickTheme(t);
         }
         if (e.type === 'cookies') {
           if (analyticsOn) setCookiePane((c) => c ?? { required: false });
@@ -580,6 +591,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       ...(keyboardless()
         ? []
         : [{ label: termOpen() ? 'Hide terminal' : 'Show terminal', action: toggleTerm }]),
+      { label: 'Colour theme…', action: () => setThemePick(true) },
       ...(analyticsOn ? [{ label: 'Cookie settings', action: openCookies }] : []),
     );
     setMenu({ x: e.clientX, y: e.clientY, items });
@@ -630,13 +642,21 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            <circle cx="353" cy="478" r="27" fill="#6FF7E0" />
+            <circle cx="353" cy="478" r="27" style={{ fill: 'var(--accent)' }} />
           </svg>
         </a>
         <p className="title">
           <span className="title-user">guest@{'dev.nevcan.com'}</span>
           <span className="title-path">{active ? ` — ${displayPath(active)}` : ''}</span>
         </p>
+        <button
+          type="button"
+          className="tb-btn only-mobile"
+          onClick={() => setThemePick(true)}
+          aria-label="Colour theme"
+        >
+          <Icon d={ICON.theme} />
+        </button>
         <button
           type="button"
           className="tb-btn tb-term"
@@ -697,6 +717,15 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           >
             <Icon d={ICON.github} />
           </a>
+          <button
+            type="button"
+            className="act-btn"
+            onClick={() => setThemePick(true)}
+            title="Colour theme"
+            aria-label="Colour theme"
+          >
+            <Icon d={ICON.theme} />
+          </button>
         </nav>
 
         <aside className="explorer" aria-label="Explorer">
@@ -925,13 +954,19 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       </div>
 
       {menu && <ContextMenu {...menu} onClose={closeMenu} />}
+      {themePick && <ThemePicker onClose={() => setThemePick(false)} />}
       <footer className="statusbar">
-        <span className="sb-item sb-accent">⎇ main</span>
+        <span className="sb-item sb-accent hide-mobile">⎇ main</span>
         <span className="sb-item sb-flash" aria-live="polite">
           {flash}
         </span>
         <span className="sb-item hide-touch">{displayPath(shell.cwd)}</span>
-        <span className="sb-item only-touch">⌨ the terminal needs a keyboard</span>
+        <span
+          className="sb-item sb-note only-touch"
+          title="The terminal needs a keyboard: try it on a computer"
+        >
+          ⌨ terminal: desktop
+        </span>
         <span className="sb-spacer" />
         {file && !file.binary && (
           <span className="sb-item hide-mobile">

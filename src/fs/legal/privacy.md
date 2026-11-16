@@ -1,6 +1,6 @@
 # Privacy
 
-_Last updated 15 November 2026_
+_Last updated 16 November 2026_
 
 ## In short
 
@@ -10,7 +10,8 @@ _Last updated 15 November 2026_
   purposes.
 - **What you type stays in your browser.** The terminal runs entirely in your browser. Commands
   you type are not sent or stored anywhere, and the history is gone when you close the page.
-- **Your choice is remembered.** Your cookie choice is stored in your browser.
+- **Your choices are remembered.** Your cookie choice, and a colour theme if you pick one, are
+  stored in your browser.
 - **Served from this site.** Fonts and images are served by this site's host, GitHub Pages (no
   third-party fonts or embeds); Google Analytics loads from Google only after you accept.
 
@@ -77,7 +78,8 @@ withdrew.
 
 Your choice itself is stored in your browser (local storage entry "dev-consent", kept for 12
 months, after which you are asked again). This is needed to respect your choice and needs no
-consent.
+consent. A colour theme you pick is stored the same way ("dev-theme", 12 months); it never leaves
+your browser and needs no consent.
 
 ## Your rights
 
