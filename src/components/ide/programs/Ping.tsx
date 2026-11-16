@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import type { Line } from '@/lib/shell';
 import { LineView } from '../TermLine';
-import { isQuit, useKeys, useTick, type ProgramProps } from './common';
+import { isInterrupt, useKeys, useTick, type ProgramProps } from './common';
 
 const COUNT = 6;
 
@@ -50,7 +50,7 @@ export default function Ping({ args, exit }: ProgramProps) {
     setLines((l) => [...l, reply(host, sent)]);
   });
   useKeys((e) => {
-    if (!isQuit(e)) return;
+    if (!isInterrupt(e)) return;
     e.preventDefault();
     exit([...lines, [{ t: '^C', c: 'muted' }], ...stats(host, sent)]);
   });

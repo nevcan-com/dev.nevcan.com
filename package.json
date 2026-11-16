@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.5",

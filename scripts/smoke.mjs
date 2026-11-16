@@ -1,0 +1,295 @@
+/**
+ * Smoke test: drives the site in headless Chrome with real key events and checks the things that
+ * have broken before. No dependencies: it talks to Chrome over the DevTools protocol (Node 22+
+ * has fetch and WebSocket built in).
+ *
+ *   npm run build && npm run preview     (in one terminal)
+ *   npm run smoke                        (in another; default http://localhost:4321/)
+ *   npm run smoke -- https://dev.nevcan.com/
+ *
+ * Chrome is found in the usual places; set CHROME=/path/to/chrome to use another. Every visit
+ * starts with a fresh profile and chooses "Reject" in the cookie pane, so nothing is ever sent to
+ * analytics. Exits with 1 if any check fails.
+ */
+import { spawn } from 'node:child_process';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const URL_ = process.argv[2] ?? 'http://localhost:4321/';
+const CHROMES = [
+  process.env.CHROME,
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+].filter(Boolean);
+const CHROME = CHROMES.find((p) => existsSync(p));
+if (!CHROME) {
+  console.error('smoke: no Chrome found. Set CHROME=/path/to/chrome');
+  process.exit(2);
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let failures = 0;
+const check = (name, ok, got) => {
+  if (ok) console.log(`  ✓ ${name}`);
+  else {
+    failures++;
+    console.log(`  ✗ ${name}${got === undefined ? '' : `  (got: ${JSON.stringify(got)})`}`);
+  }
+};
+
+/** a fresh headless Chrome with one page; `touch` makes it a phone without a mouse */
+async function open({ touch = false } = {}) {
+  const port = 9300 + Math.floor(Math.random() * 600);
+  const profile = mkdtempSync(join(tmpdir(), 'smoke-'));
+  const chrome = spawn(
+    CHROME,
+    [
+      '--headless=new',
+      `--remote-debugging-port=${port}`,
+      `--user-data-dir=${profile}`,
+      '--window-size=1400,900',
+      'about:blank',
+    ],
+    { stdio: 'ignore' },
+  );
+  let page;
+  for (let i = 0; i < 75 && !page; i++) {
+    await sleep(200);
+    try {
+      const targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
+      page = targets.find((t) => t.type === 'page');
+    } catch {
+      /* not up yet */
+    }
+  }
+  if (!page) throw new Error('Chrome did not start');
+  const ws = new WebSocket(page.webSocketDebuggerUrl);
+  await new Promise((r) => (ws.onopen = r));
+  let id = 0;
+  const pending = new Map();
+  const exceptions = [];
+  ws.onmessage = (m) => {
+    const msg = JSON.parse(m.data);
+    if (msg.id && pending.has(msg.id)) {
+      pending.get(msg.id)(msg);
+      pending.delete(msg.id);
+    } else if (msg.method === 'Runtime.exceptionThrown') {
+      const d = msg.params.exceptionDetails;
+      exceptions.push(d.exception?.description ?? d.text);
+    }
+  };
+  const send = (method, params = {}) =>
+    new Promise((r) => {
+      pending.set(++id, r);
+      ws.send(JSON.stringify({ id, method, params }));
+    });
+  const ev = async (expression) =>
+    (await send('Runtime.evaluate', { expression, returnByValue: true })).result?.result?.value;
+
+  await send('Runtime.enable');
+  await send('Page.enable');
+  if (touch) {
+    await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    await send('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' });
+    await send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 3,
+      mobile: true,
+    });
+  }
+  // what cookie-notice blockers do (EasyList Cookie has a generic ##.cookie-pane rule)
+  await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `document.addEventListener('DOMContentLoaded', () => {
+      const s = document.createElement('style');
+      s.textContent = '.cookie-pane, .cookie-settings, .cookie-banner, #cookie-banner { display: none !important }';
+      document.head.append(s);
+    })`,
+  });
+  await send('Page.navigate', { url: URL_ });
+  for (let i = 0; i < 50 && !(await ev(`!!document.querySelector('.statusbar')`)); i++)
+    await sleep(200);
+  await sleep(500);
+
+  const KEYS = {
+    Escape: { code: 'Escape', keyCode: 27 },
+    Enter: { code: 'Enter', keyCode: 13, text: '\r' },
+    ' ': { code: 'Space', keyCode: 32, text: ' ' },
+  };
+  /** press a key; `ctrl` for Ctrl+<key> */
+  const key = async (k, ctrl = false) => {
+    const d = KEYS[k] ?? {
+      code: 'Key' + k.toUpperCase(),
+      keyCode: k.toUpperCase().charCodeAt(0),
+      text: ctrl ? undefined : k,
+    };
+    const base = {
+      key: k,
+      code: d.code,
+      windowsVirtualKeyCode: d.keyCode,
+      modifiers: ctrl ? 2 : 0,
+    };
+    await send('Input.dispatchKeyEvent', { type: 'keyDown', ...base, text: d.text });
+    await send('Input.dispatchKeyEvent', { type: 'keyUp', ...base });
+    await sleep(150);
+  };
+  /** type a command at the prompt and press Enter */
+  const run = async (cmd) => {
+    await ev(`document.querySelector('.t-input')?.focus()`);
+    await send('Input.insertText', { text: cmd });
+    await key('Enter');
+    await sleep(700);
+  };
+  /** a program is running: full-screen ones cover the terminal, the others hide the prompt */
+  const running = () =>
+    ev(`!!document.querySelector('.prog-full') || !document.querySelector('.t-input')`);
+  const hint = () => ev(`document.querySelector('.prog-full .prog-hint')?.textContent ?? null`);
+  const lastLine = () =>
+    ev(`[...document.querySelectorAll('.term-out .t-line')].at(-1)?.textContent ?? ''`);
+  const pane = () =>
+    ev(`(() => { const p = document.querySelector('[aria-labelledby$="-title"]');
+      return !!p && p.getBoundingClientRect().width > 0 && getComputedStyle(p).display !== 'none' })()`);
+  const reject = () =>
+    ev(
+      `[...document.querySelectorAll('button')].find(b => /^reject/i.test(b.textContent.trim()))?.click()`,
+    );
+  const close = async () => {
+    ws.close();
+    chrome.kill();
+    await sleep(300);
+    rmSync(profile, { recursive: true, force: true });
+  };
+  return { ev, key, run, running, hint, lastLine, pane, reject, exceptions, close };
+}
+
+// ---------- desktop ----------
+console.log(`smoke: ${URL_}\n\ndesktop`);
+{
+  const p = await open();
+
+  check('cookie pane shows on a first visit, even with a cookie-notice blocker', await p.pane());
+  await p.reject();
+  await sleep(300);
+  check('Reject closes it', !(await p.pane()));
+  await p.ev(
+    `[...document.querySelectorAll('.statusbar button')].find(b => b.textContent.trim() === 'Cookies')?.click()`,
+  );
+  await sleep(400);
+  check('"Cookies" in the status bar opens it again', await p.pane());
+  await p.reject();
+  await sleep(300);
+
+  check(
+    'commands in the text are runnable',
+    (await p.ev(`document.querySelectorAll('code.runnable').length`)) > 0,
+  );
+
+  await p.run('matrix');
+  check('matrix runs', await p.running());
+  await p.key('x');
+  check('matrix: another key does not quit', await p.running());
+  await p.key('q');
+  check('matrix: q quits', !(await p.running()));
+
+  await p.run('aquarium');
+  await p.key('Escape');
+  check('aquarium: Esc quits', !(await p.running()));
+
+  await p.run('top');
+  await p.key('c', true);
+  check('top: Ctrl+C quits', !(await p.running()));
+
+  await p.run('snake');
+  await p.key(' ');
+  check('snake: Space starts', (await p.hint())?.includes('space pause'), await p.hint());
+  await p.key(' ');
+  check('snake: Space pauses', (await p.hint())?.includes('space go'), await p.hint());
+  await p.key('c', true);
+  check(
+    'snake: Ctrl+C quits with a score line',
+    (await p.lastLine()).startsWith('snake:'),
+    await p.lastLine(),
+  );
+
+  await p.run('hangman');
+  await p.key('q');
+  check('hangman: q is a guess, not quit', await p.running());
+  await p.key('Escape');
+  check('hangman: Esc quits', !(await p.running()));
+
+  await p.run('typing');
+  await p.key('q');
+  check('typing: q is typed, not quit', await p.running());
+  await p.key('Escape');
+  check('typing: Esc quits', !(await p.running()));
+
+  await p.run('guess');
+  await p.key('q');
+  check('guess: q quits', !(await p.running()));
+
+  await p.run('ping dive.nevcan.com');
+  await p.key('q');
+  await p.key('Escape');
+  check('ping: q and Esc do not stop it', await p.running());
+  await p.key('c', true);
+  check(
+    'ping: Ctrl+C stops it with statistics',
+    /packet loss/.test(await p.lastLine()) || /safety stop/.test(await p.lastLine()),
+    await p.lastLine(),
+  );
+
+  await p.run('hire nevcan');
+  await p.key('q');
+  await p.key('Escape');
+  check('hire: q and Esc do not stop it', await p.running());
+  for (let i = 0; i < 40 && (await p.running()); i++) await sleep(250);
+  check(
+    'hire: ends with LinkedIn first, then the e-mail',
+    /^next: LinkedIn · \S+@\S+$/.test(await p.lastLine()),
+    await p.lastLine(),
+  );
+
+  await p.run('sl');
+  const t0 = Date.now();
+  await p.key('q');
+  await p.key('c', true);
+  await p.key('Escape');
+  check('sl: q, Ctrl+C and Esc do not stop the train', await p.running());
+  while ((await p.running()) && Date.now() - t0 < 15000) await sleep(200);
+  check(
+    'sl: the train leaves by itself',
+    /^sl: trains don't stop/.test(await p.lastLine()),
+    await p.lastLine(),
+  );
+
+  check('no exceptions', p.exceptions.length === 0, p.exceptions);
+  await p.close();
+}
+
+// ---------- touch-only (a phone) ----------
+console.log('\ntouch-only');
+{
+  const p = await open({ touch: true });
+  const shown = (sel) =>
+    p.ev(
+      `(() => { const e = document.querySelector('${sel}'); return !!e && getComputedStyle(e).display !== 'none' })()`,
+    );
+  check('cookie pane shows on a first visit', await p.pane());
+  await p.reject();
+  check('no terminal', !(await shown('.terminal')));
+  check('no terminal button in the title bar', !(await shown('.tb-term')));
+  check('the status bar says the terminal needs a keyboard', await shown('.only-touch'));
+  check(
+    'commands in the text are not runnable',
+    (await p.ev(`document.querySelectorAll('code.runnable').length`)) === 0,
+  );
+  check('no exceptions', p.exceptions.length === 0, p.exceptions);
+  await p.close();
+}
+
+console.log(failures ? `\n${failures} failed` : '\nall passed');
+process.exit(failures ? 1 : 0);

@@ -22,6 +22,21 @@ npm run build   # astro check + static build to dist/
 npm run format
 ```
 
+### Smoke test
+
+`scripts/smoke.mjs` drives the site in headless Chrome with real key events: the cookie pane
+(also with a cookie-notice blocker's rules in place), every terminal program's keys, and the
+touch-only layout. No dependencies; it needs Chrome (set `CHROME=` if it isn't found). Run it
+before a deploy:
+
+```sh
+npm run build && npm run preview   # one terminal
+npm run smoke                      # another; or: npm run smoke -- https://dev.nevcan.com/
+```
+
+It chooses "Reject" in the cookie pane on every visit, so it never sends anything to analytics.
+Add a check when something breaks, so it can't break the same way twice.
+
 ## How it works
 
 | Piece                                                       | File                                |
@@ -61,7 +76,8 @@ npm run format
 - The same keys in every program (`programs/common.tsx`): q, Esc or Ctrl+C quit (where letters
   are typed, q is a letter, so only Esc and Ctrl+C); Space pauses and, after a game ends, plays
   again; Enter answers in the games you type into; arrows move. Each shows them with `<Hint>` in
-  the bottom-right corner. `sl` stops for no key at all, on purpose.
+  the bottom-right corner. Programs that print into the scrollback (`ping`, `hire`) stop only
+  for Ctrl+C, like the real ones. `sl` stops for no key at all, on purpose.
 - Pipes work for text: `fortune | cowsay`, `ls | grep exp`. `grep <text> [file|dir]` also
   searches files directly (directories recursively; with no file, everything under the current
   directory). The Konami code (↑↑↓↓←→←→BA) sends

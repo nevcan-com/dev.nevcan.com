@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { profile } from '@/data/profile';
 import type { Line } from '@/lib/shell';
 import { LineView } from '../TermLine';
-import { isQuit, useKeys, useTick, type ProgramProps } from './common';
+import { isInterrupt, useKeys, useTick, type ProgramProps } from './common';
 
 const version = `${new Date().getFullYear() - profile.since}.0.0`;
 const STEPS = [
@@ -38,9 +38,9 @@ function done(): Line[] {
     [],
     [
       { t: 'next: ', c: 'muted' },
-      { t: profile.email, href: `mailto:${profile.email}`, c: 'link' },
-      { t: ' · ', c: 'muted' },
       { t: 'LinkedIn', href: linkedin.href, c: 'link' },
+      { t: ' · ', c: 'muted' },
+      { t: profile.email, href: `mailto:${profile.email}`, c: 'link' },
     ],
   ];
 }
@@ -54,7 +54,7 @@ export default function Hire({ exit }: ProgramProps) {
     else setP(next);
   });
   useKeys((e) => {
-    if (!isQuit(e)) return;
+    if (!isInterrupt(e)) return;
     e.preventDefault();
     exit([
       [
