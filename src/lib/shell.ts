@@ -65,6 +65,18 @@ export interface Result {
   effects: Effect[];
 }
 
+/** a line of a hidden file: `#` lines are comments; in .social the address is a link */
+function hiddenLine(file: string, l: string): Line {
+  if (l.startsWith('#')) return [txt(l, 'muted')];
+  const m = file === '.social' ? /^(.*?)(\S+\.\S+)$/.exec(l) : null;
+  if (!m) return [txt(l)];
+  const addr = m[2]!;
+  const href = addr.endsWith('.bsky.social')
+    ? `https://bsky.app/profile/${addr}`
+    : `https://${addr}`;
+  return [txt(m[1]!), { t: addr, c: 'link', href }];
+}
+
 /** hidden files, only for `ls -a` and `cat` */
 const HIDDEN: Record<string, string> = {
   '.plan': `Live:  dev.nevcan.com (you are here)
@@ -647,7 +659,7 @@ export const COMMANDS: Record<string, Cmd> = {
       return args.flatMap((a) => {
         const hiddenName = resolvePath(ctx.state.cwd, a);
         if (hiddenName !== null && hiddenName in HIDDEN)
-          return HIDDEN[hiddenName]!.split('\n').map((l) => [txt(l)]);
+          return HIDDEN[hiddenName]!.split('\n').map((l) => hiddenLine(hiddenName, l));
         const r = fileArg(ctx, 'cat', a);
         if ('error' in r) return r.error;
         if (ctx.vfs[r.path]!.binary)
