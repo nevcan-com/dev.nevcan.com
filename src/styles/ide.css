@@ -1905,3 +1905,74 @@ button {
   cursor: default;
   background: none;
 }
+
+/* ---------- after rm -rf (Wiped.tsx) ---------- */
+
+.wiped {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2rem max(1.5rem, calc(50vw - 22rem));
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  animation: wiped-in 0.4s ease-out;
+}
+.wiped-cmd {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.wiped-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.1em;
+  vertical-align: text-bottom;
+  background: var(--accent);
+  animation: wiped-blink 1s steps(1) infinite;
+}
+.wiped-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  color: var(--text-strong);
+}
+.wiped-sub {
+  margin: 0 0 0.6rem;
+  color: var(--muted);
+}
+.wiped .btn {
+  margin-top: 0.4rem;
+}
+.wiped-bar {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  white-space: pre;
+}
+.wiped-note {
+  margin: 2rem 0 0;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+@keyframes wiped-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes wiped-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wiped,
+  .wiped-cursor {
+    animation: none;
+  }
+}

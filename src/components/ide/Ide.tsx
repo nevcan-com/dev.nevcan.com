@@ -29,7 +29,16 @@ import { themeById } from '@/data/themes';
 import CrashView from './CrashView';
 import ContextMenu, { type MenuItem } from './ContextMenu';
 import { applyChoice, readChoice, saveChoice } from '@/components/consent/consent';
-import { COMMANDS, complete, run, type Line, type ProgramName, type ShellState } from '@/lib/shell';
+import {
+  COMMANDS,
+  complete,
+  hiddenFiles,
+  run,
+  type Line,
+  type ProgramName,
+  type ShellState,
+} from '@/lib/shell';
+import Wiped from './Wiped';
 import { basename, dirname, displayPath, langOf, listDir, pathForRoute, type Vfs } from '@/lib/vfs';
 import { profile } from '@/data/profile';
 import { analyticsOn } from '@/data/analytics';
@@ -121,6 +130,7 @@ function Tree({
   expanded,
   onToggle,
   onOpen,
+  gone,
 }: {
   vfs: Vfs;
   dir: string;
@@ -129,64 +139,69 @@ function Tree({
   expanded: Set<string>;
   onToggle: (d: string) => void;
   onOpen: (p: string) => void;
+  /** removed by `rm -rf` so far */
+  gone: Set<string>;
 }) {
   return (
     <ul role={depth ? 'group' : 'tree'} aria-label={depth ? undefined : 'Files'}>
-      {listDir(vfs, dir).map((e) => {
-        const pad = { paddingLeft: `${0.75 + depth * 0.9}rem` };
-        if (e.type === 'dir') {
-          const isOpen = expanded.has(e.path);
+      {listDir(vfs, dir)
+        .filter((e) => !gone.has(e.path))
+        .map((e) => {
+          const pad = { paddingLeft: `${0.75 + depth * 0.9}rem` };
+          if (e.type === 'dir') {
+            const isOpen = expanded.has(e.path);
+            return (
+              <li key={e.path} role="treeitem" aria-expanded={isOpen}>
+                <button
+                  type="button"
+                  className="tree-row is-dir"
+                  data-path={e.path}
+                  data-kind="dir"
+                  style={pad}
+                  onClick={() => onToggle(e.path)}
+                >
+                  <span className={`chev ${isOpen ? 'open' : ''}`}>
+                    <Icon d={ICON.chevron} />
+                  </span>
+                  {e.name}
+                </button>
+                {isOpen && (
+                  <Tree
+                    vfs={vfs}
+                    dir={e.path}
+                    depth={depth + 1}
+                    active={active}
+                    expanded={expanded}
+                    onToggle={onToggle}
+                    onOpen={onOpen}
+                    gone={gone}
+                  />
+                )}
+              </li>
+            );
+          }
           return (
-            <li key={e.path} role="treeitem" aria-expanded={isOpen}>
-              <button
-                type="button"
-                className="tree-row is-dir"
+            <li key={e.path} role="treeitem" aria-selected={active === e.path}>
+              <a
+                className={`tree-row is-file ${active === e.path ? 'active' : ''}`}
                 data-path={e.path}
-                data-kind="dir"
+                data-kind="file"
                 style={pad}
-                onClick={() => onToggle(e.path)}
+                href={vfs[e.path]!.route}
+                onClick={(ev) => {
+                  if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+                  ev.preventDefault();
+                  onOpen(e.path);
+                }}
               >
-                <span className={`chev ${isOpen ? 'open' : ''}`}>
-                  <Icon d={ICON.chevron} />
+                <span className="file-ico">
+                  <Icon d={ICON[langOf(e.path) === 'markdown' ? 'md' : 'svg']} />
                 </span>
                 {e.name}
-              </button>
-              {isOpen && (
-                <Tree
-                  vfs={vfs}
-                  dir={e.path}
-                  depth={depth + 1}
-                  active={active}
-                  expanded={expanded}
-                  onToggle={onToggle}
-                  onOpen={onOpen}
-                />
-              )}
+              </a>
             </li>
           );
-        }
-        return (
-          <li key={e.path} role="treeitem" aria-selected={active === e.path}>
-            <a
-              className={`tree-row is-file ${active === e.path ? 'active' : ''}`}
-              data-path={e.path}
-              data-kind="file"
-              style={pad}
-              href={vfs[e.path]!.route}
-              onClick={(ev) => {
-                if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
-                ev.preventDefault();
-                onOpen(e.path);
-              }}
-            >
-              <span className="file-ico">
-                <Icon d={ICON[langOf(e.path) === 'markdown' ? 'md' : 'svg']} />
-              </span>
-              {e.name}
-            </a>
-          </li>
-        );
-      })}
+        })}
     </ul>
   );
 }
@@ -249,6 +264,10 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   });
   /** the log-in dialog (UserDialog.tsx) */
   const [userPick, setUserPick] = useState(false);
+  /** `rm -rf`: running (no prompt, can't be stopped), what is gone so far, and the end */
+  const [wiping, setWiping] = useState(false);
+  const [gone, setGone] = useState<Set<string>>(() => new Set());
+  const [wiped, setWiped] = useState(false);
   /** the cookie pane: null = closed; required = first visit, closes only with a choice */
   const [cookiePane, setCookiePane] = useState<{ required: boolean } | null>(null);
   /** the color theme picker (ThemePicker.tsx) */
@@ -311,6 +330,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           setTerm((t) => (t === 'closed' || (t === 'auto' && isMobile()) ? 'open' : t));
         }
         if (e.type === 'user') saveUser(e.name);
+        if (e.type === 'wipe') setWiping(true);
         if (e.type === 'theme') {
           const t = themeById(e.id);
           if (t) pickTheme(t);
@@ -411,6 +431,55 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     const d = doc.getBoundingClientRect();
     doc.scrollTo({ top: doc.scrollTop + box.top - d.top - d.height / 3 });
   }, [active, file, view, query, jump, side]);
+
+  // `rm -rf`: every file goes, children before their folder as rm does it, slow at first and
+  // then faster; the explorer and the tabs follow; then the system; then nothing (Wiped.tsx).
+  // Nothing is really deleted: the backup is a reload.
+  useEffect(() => {
+    if (!wiping) return;
+    const steps: { path?: string; text: string }[] = hiddenFiles().map((h) => ({
+      text: `removed '~/${h}'`,
+    }));
+    const walk = (dir: string) => {
+      for (const e of listDir(vfs, dir)) {
+        if (e.type === 'dir') {
+          walk(e.path);
+          steps.push({ path: e.path, text: `removed directory '~/${e.path}'` });
+        } else steps.push({ path: e.path, text: `removed '~/${e.path}'` });
+      }
+    };
+    walk('');
+    for (const p of ['/home/nevcan', '/usr/lib/react', '/usr/bin/astro', '/bin/nsh'])
+      steps.push({ text: `removed directory '${p}'` });
+    const total = matchMedia('(prefers-reduced-motion: reduce)').matches ? 1000 : 5500;
+    const timers = steps.map((st, i) =>
+      setTimeout(
+        () => {
+          setItems((it) => [...it, ...outItems([[{ t: st.text, c: 'muted' }]])]);
+          const p = st.path;
+          if (!p) return;
+          setGone((g) => new Set(g).add(p));
+          setTabs((t) => t.filter((x) => x !== p));
+          setActive((a) => (a === p ? null : a));
+        },
+        // slow at first, then faster
+        total * Math.sqrt((i + 1) / steps.length),
+      ),
+    );
+    timers.push(setTimeout(() => setWiped(true), total + 900));
+    // Ctrl+C: too late
+    let told = false;
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.ctrlKey || e.key.toLowerCase() !== 'c' || told) return;
+      told = true;
+      setItems((it) => [...it, ...outItems([[{ t: '^C' }], [{ t: 'rm: too late.', c: 'err' }]])]);
+    };
+    addEventListener('keydown', onKey);
+    return () => {
+      timers.forEach(clearTimeout);
+      removeEventListener('keydown', onKey);
+    };
+  }, [wiping, vfs]);
 
   // Ctrl+Shift+F (⌘⇧F): Search, as in the editor
   useEffect(() => {
@@ -942,6 +1011,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
                 expanded={expanded}
                 onToggle={toggleDir}
                 onOpen={openViaShell}
+                gone={gone}
               />
             </>
           )}
@@ -1146,6 +1216,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
               }
               onClear={() => setItems([])}
               program={program}
+              locked={wiping}
               onProgramExit={(lines) => {
                 setProgram(null);
                 if (lines?.length) setItems((it) => [...it, ...outItems(lines)]);
@@ -1169,6 +1240,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       </div>
 
       {menu && <ContextMenu {...menu} onClose={closeMenu} />}
+      {wiped && <Wiped />}
       {themePick && <ThemePicker onClose={() => setThemePick(false)} />}
       {userPick && (
         <UserDialog

@@ -40,6 +40,8 @@ export type Effect =
   | { type: 'cookies' }
   /** pick a color theme (and save it on this device) */
   | { type: 'theme'; id: string }
+  /** `rm -rf`: the whole site goes, file by file (Ide.tsx), until the backup brings it back */
+  | { type: 'wipe' }
   /** log in (save the name on this device) or out (null: forget it) */
   | { type: 'user'; name: string | null }
   /** a program that takes over the terminal for a while (lazy-loaded: programs/index.ts) */
@@ -76,6 +78,15 @@ function hiddenLine(file: string, l: string): Line {
     : `https://${addr}`;
   return [txt(m[1]!), { t: addr, c: 'link', href }];
 }
+
+/** `rm -rf`, `rm -fr`, `rm -r -f`, `rm -Rf`: recursive and forced */
+const recursiveForce = (args: string[]): boolean => {
+  const flags = args.filter((a) => /^-[a-zA-Z]+$/.test(a)).join('');
+  return /[rR]/.test(flags) && flags.includes('f');
+};
+
+/** the hidden files, for `rm -rf` to remove first */
+export const hiddenFiles = (): string[] => Object.keys(HIDDEN);
 
 /** hidden files, only for `ls -a` and `cat` */
 const HIDDEN: Record<string, string> = {
@@ -510,7 +521,7 @@ const SECRET_DESC: Record<string, string> = {
   cowsay: 'a cow says it (try fortune | cowsay)',
   npm: 'npm install nevcan',
   sudo: 'go on, try it',
-  rm: 'try it. Carefully.',
+  rm: 'try it. rm -rf, even.',
   vim: 'opens the file in the editor',
   vi: 'opens the file in the editor',
   nano: 'opens the file in the editor',
@@ -1014,16 +1025,23 @@ export const COMMANDS: Record<string, Cmd> = {
   sudo: {
     desc: '',
     hidden: true,
-    fn: (_, ctx) =>
-      err(`${ctx.state.user} is not in the sudoers file. This incident will be reported.`),
+    fn: (args, ctx) =>
+      // the one thing sudo lets through: the joke below
+      args[0] === 'rm' && recursiveForce(args.slice(1))
+        ? COMMANDS.rm!.fn(args.slice(1), ctx)
+        : err(`${ctx.state.user} is not in the sudoers file. This incident will be reported.`),
   },
   rm: {
     desc: '',
     hidden: true,
-    fn: (args) =>
-      args.includes('-rf') || args.includes('-fr')
-        ? [...err('rm: nice try.'), muted('Twenty years of work, gone in one command? Not today.')]
-        : err("rm: read-only file system. Everything here is look, don't touch."),
+    fn: (args, ctx) => {
+      if (!recursiveForce(args))
+        return err("rm: read-only file system. Everything here is look, don't touch.");
+      // with a target or without (most visitors type just `rm -rf`), everything goes
+      // (Ide.tsx plays it)
+      ctx.effects.push({ type: 'wipe' });
+      return [];
+    },
   },
   mkdir: readOnly('mkdir'),
   touch: readOnly('touch'),
