@@ -41,6 +41,8 @@ interface Props {
   /** a running program owns the terminal until it exits */
   program: { id: number; name: ProgramName; args: string[] } | null;
   onProgramExit: (lines?: Line[]) => void;
+  /** no prompt: something is running that can't be stopped (`rm -rf`) */
+  locked?: boolean;
 }
 
 export const Prompt = ({ cwd, user }: { cwd: string; user: string }) => (
@@ -59,6 +61,7 @@ const Terminal = forwardRef<TerminalHandle, Props>(function Terminal(
     items,
     cwd,
     user,
+    locked,
     history,
     onExec,
     onComplete,
@@ -153,7 +156,7 @@ const Terminal = forwardRef<TerminalHandle, Props>(function Terminal(
           )}
         </div>
         {running && !prog.full ? running : null}
-        {!program && (
+        {!program && !locked && (
           <label className="t-line t-input-row">
             <Prompt cwd={cwd} user={user} />
             <input

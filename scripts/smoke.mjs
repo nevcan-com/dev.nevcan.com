@@ -638,6 +638,59 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     await stored(),
   );
 
+  // rm -rf: everything goes, Ctrl+C can't stop it, the backup brings it back (a reload)
+  {
+    await p.run('rm about.md');
+    check('plain rm is still read-only', /read-only/.test(await p.lastLine()), await p.lastLine());
+    await p.run('rm -rf');
+    check('rm -rf without a target: missing operand', /missing operand/.test(await p.lastLine()));
+    await p.run('sudo rm -rf /');
+    check(
+      'sudo rm -rf / starts it, and the prompt goes',
+      !(await p.ev(`!!document.querySelector('.t-input')`)),
+    );
+    await sleep(1500);
+    await p.key('c', true);
+    check(
+      'Ctrl+C: too late',
+      await p.waitFor(
+        () =>
+          p.ev(
+            `[...document.querySelectorAll('.term-out .t-line')].some(l => l.textContent === 'rm: too late.')`,
+          ),
+        2000,
+      ),
+    );
+    check(
+      'the files leave the explorer',
+      await p.waitFor(
+        () => p.ev(`document.querySelectorAll('.explorer .tree-row').length === 0`),
+        8000,
+      ),
+    );
+    check(
+      'then the site is gone',
+      await p.waitFor(() => p.ev(`!!document.querySelector('.wiped')`), 4000),
+    );
+    check(
+      'no tabs left',
+      (await p.ev(`document.querySelectorAll('.tab[data-path]').length`)) === 0,
+    );
+    await p.ev(
+      `[...document.querySelectorAll('.wiped button')].find(b => b.textContent.includes('Restore'))?.click()`,
+    );
+    await sleep(3500);
+    for (let i = 0; i < 30 && !(await p.ev(`!!document.querySelector('.statusbar')`)); i++)
+      await sleep(200);
+    await sleep(500);
+    check(
+      'Restore from backup: the site is back, as on a first visit',
+      !(await p.ev(`!!document.querySelector('.wiped')`)) &&
+        (await p.ev(`document.querySelectorAll('.explorer .tree-row').length`)) > 5 &&
+        (await p.ev(`location.pathname`)) === '/',
+    );
+  }
+
   check('no exceptions', p.exceptions.length === 0, p.exceptions);
   await p.close();
 }
