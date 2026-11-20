@@ -1037,8 +1037,8 @@ export const COMMANDS: Record<string, Cmd> = {
     fn: (args, ctx) => {
       if (!recursiveForce(args))
         return err("rm: read-only file system. Everything here is look, don't touch.");
-      if (!args.some((a) => !a.startsWith('-'))) return err('rm: missing operand');
-      // whatever the target, everything goes (Ide.tsx plays it)
+      // with a target or without (most visitors type just `rm -rf`), everything goes
+      // (Ide.tsx plays it)
       ctx.effects.push({ type: 'wipe' });
       return [];
     },

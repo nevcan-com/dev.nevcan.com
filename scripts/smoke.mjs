@@ -642,11 +642,15 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
   {
     await p.run('rm about.md');
     check('plain rm is still read-only', /read-only/.test(await p.lastLine()), await p.lastLine());
-    await p.run('rm -rf');
-    check('rm -rf without a target: missing operand', /missing operand/.test(await p.lastLine()));
-    await p.run('sudo rm -rf /');
+    await p.run('sudo ls');
     check(
-      'sudo rm -rf / starts it, and the prompt goes',
+      'sudo still refuses everything else',
+      /sudoers/.test(await p.lastLine()),
+      await p.lastLine(),
+    );
+    await p.run('rm -rf');
+    check(
+      'just `rm -rf` starts it, and the prompt goes',
       !(await p.ev(`!!document.querySelector('.t-input')`)),
     );
     await sleep(1500);
