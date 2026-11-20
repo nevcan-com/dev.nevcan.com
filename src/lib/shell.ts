@@ -10,6 +10,7 @@ import { profile } from '@/data/profile';
 import { fortunes } from '@/data/fun';
 import { DEFAULT_THEME, THEMES, themeById } from '@/data/themes';
 import { GUEST, badName, reservedName } from './user';
+import { BRANCHES, CURRENT, branchByName } from '@/data/branches';
 import { HOME, basename, displayPath, isDir, isFile, listDir, resolvePath, type Vfs } from './vfs';
 
 export interface Seg {
@@ -42,6 +43,8 @@ export type Effect =
   | { type: 'theme'; id: string }
   /** `rm -rf`: the whole site goes, file by file (Ide.tsx), until the backup brings it back */
   | { type: 'wipe' }
+  /** `git checkout <site>`: open another nevcan.com site in this tab */
+  | { type: 'goto'; url: string }
   /** log in (save the name on this device) or out (null: forget it) */
   | { type: 'user'; name: string | null }
   /** a program that takes over the terminal for a while (lazy-loaded: programs/index.ts) */
@@ -79,6 +82,40 @@ function hiddenLine(file: string, l: string): Line {
   return [txt(m[1]!), { t: addr, c: 'link', href }];
 }
 
+/** `git branch`: the live nevcan.com sites, this one starred */
+function gitBranch(): Line[] {
+  const w = Math.max(...BRANCHES.map((b) => b.name.length)) + 2;
+  return BRANCHES.map((b) =>
+    b.name === CURRENT
+      ? line(txt('* ', 'accent'), txt(b.name, 'accent'))
+      : line(
+          '  ',
+          { t: b.name.padEnd(w), c: 'cmd', run: `git checkout ${b.name}` },
+          txt(b.url ? b.host : `-> ${CURRENT}`, 'muted'),
+        ),
+  );
+}
+
+/** `git checkout <branch>`: main and dev stay here; the others open their site */
+function gitCheckout(args: string[], ctx: Ctx): Line[] {
+  const name = args.find((a) => !a.startsWith('-'));
+  if (!name) return [muted('usage: git checkout <branch>. Try: git branch')];
+  const b = branchByName(name);
+  if (!b) return err(`error: pathspec '${name}' did not match any file(s) known to git`);
+  if (!b.url)
+    return name === CURRENT
+      ? [[txt(`Already on '${CURRENT}'`)]]
+      : [
+          [txt(`Already on '${CURRENT}'`)],
+          muted(`${name} and ${CURRENT} are the same branch here: this is ${b.host}.`),
+        ];
+  ctx.effects.push({ type: 'goto', url: b.url });
+  return [
+    [txt(`Switched to branch '${b.name}'`)],
+    muted(`Opening ${b.host}…${b.note === 'sign-in' ? ' (it asks you to sign in)' : ''}`),
+  ];
+}
+
 /** `rm -rf`, `rm -fr`, `rm -r -f`, `rm -Rf`: recursive and forced */
 const recursiveForce = (args: string[]): boolean => {
   const flags = args.filter((a) => /^-[a-zA-Z]+$/.test(a)).join('');
@@ -90,11 +127,12 @@ export const hiddenFiles = (): string[] => Object.keys(HIDDEN);
 
 /** hidden files, only for `ls -a` and `cat` */
 const HIDDEN: Record<string, string> = {
+  // Live is what ⎇ main lists (data/branches.ts): keep the two in step
   '.plan': `Live:  dev.nevcan.com (you are here)
        dive.nevcan.com
        fit.nevcan.com
-Next:  www.nevcan.com
-       film.nevcan.com
+       www.nevcan.com
+Next:  film.nevcan.com
        game.nevcan.com
        shop.nevcan.com`,
   '.social': `# software
@@ -538,7 +576,7 @@ const SECRET_DESC: Record<string, string> = {
   date: "your time, and Nev's in Istanbul",
   hostname: 'where you are',
   uname: 'what this runs on',
-  git: 'git status (or st), git log, git lg',
+  git: 'git status (or st), git log, git lg, git branch, git checkout (or co, switch)',
   dive: 'the other subdomain',
   hello: 'say hi',
   hi: 'say hi',
@@ -1019,7 +1057,11 @@ export const COMMANDS: Record<string, Cmd> = {
       if (args[0] === 'status' || args[0] === 'st')
         return [[txt('On branch main')], [txt('nothing to commit, working tree clean')]];
       if (args[0] === 'log') return COMMANDS['git log']!.fn(args.slice(1), ctx);
-      return err('git: this repository is read-only. Try git log.');
+      if (args[0] === 'branch') return gitBranch();
+      // `co` is Nev's alias for checkout
+      if (args[0] === 'checkout' || args[0] === 'switch' || args[0] === 'co')
+        return gitCheckout(args.slice(1), ctx);
+      return err('git: this repository is read-only. Try git log or git branch.');
     },
   },
   sudo: {
