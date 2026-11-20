@@ -445,6 +445,77 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     );
   }
 
+  // login: a name instead of "guest", only in this browser
+  {
+    const stored = () => p.ev(`localStorage.getItem('dev-user')`);
+    const title = () => p.ev(`document.querySelector('.title-user')?.textContent`);
+    check('no name stored before a login', (await stored()) === null, await stored());
+    await p.run('login <b>x</b>');
+    check('a name with markup is refused', (await stored()) === null, await stored());
+    for (const n of ['root', 'guest', 'Nev', 'nevcan', 'NevcanUludaş']) {
+      await p.run(`login ${n}`);
+      check(
+        `${n} is refused`,
+        (await stored()) === null && (await title()) === 'guest@dev.nevcan.com',
+        await stored(),
+      );
+    }
+    await p.run('login ada');
+    check(
+      '`login ada` stores it and the title bar says ada',
+      /"name":"ada"/.test(await stored()) && (await title()) === 'ada@dev.nevcan.com',
+      [await stored(), await title()],
+    );
+    check(
+      'the prompt says ada',
+      (await p.ev(`document.querySelector('.t-input-row .p-user')?.textContent`)) === 'ada@dev',
+    );
+    check('the page title never has the name', !/ada/.test(await p.ev('document.title')));
+    await p.reload();
+    check(
+      'the name is there after a reload',
+      (await title()) === 'ada@dev.nevcan.com',
+      await title(),
+    );
+    check(
+      'the welcome says welcome back',
+      /Welcome back, ada\./.test(
+        await p.ev(`document.querySelector('.term-out .t-line')?.textContent`),
+      ),
+    );
+    await p.run('whoami');
+    check(
+      'whoami says ada',
+      /^ada/.test(
+        await p.ev(`[...document.querySelectorAll('.term-out .t-line')].at(-9)?.textContent ?? ''`),
+      ) ||
+        (await p.ev(
+          `[...document.querySelectorAll('.term-out .t-line')].some(l => l.textContent === 'ada')`,
+        )),
+    );
+    await p.run('logout');
+    check(
+      '`logout` forgets it: guest again, nothing stored',
+      (await stored()) === null && (await title()) === 'guest@dev.nevcan.com',
+      [await stored(), await title()],
+    );
+    // the same from Settings
+    await p.ev(`document.querySelector('.act-btn[aria-label="Settings"]').click()`);
+    await sleep(200);
+    await p.ev(
+      `[...document.querySelectorAll('.ctx-item')].find(b => b.textContent.startsWith('Log in'))?.click()`,
+    );
+    await sleep(300);
+    check(
+      'Settings → Log in… opens the box, focused',
+      await p.ev(`document.activeElement?.getAttribute('aria-label') === 'Username'`),
+    );
+    await p.type('grace');
+    await p.key('Enter');
+    check('Enter there logs in', (await title()) === 'grace@dev.nevcan.com', await title());
+    await p.run('logout');
+  }
+
   // colour themes: a preview saves nothing, only a pick does (notes/legal.md, item 12)
   const stored = () => p.ev(`localStorage.getItem('dev-theme')`);
   const theme = () => p.ev(`document.documentElement.dataset.theme ?? 'default'`);

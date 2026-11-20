@@ -9,6 +9,7 @@
 import { profile } from '@/data/profile';
 import { fortunes } from '@/data/fun';
 import { DEFAULT_THEME, THEMES, themeById } from '@/data/themes';
+import { GUEST, badName, reservedName } from './user';
 import { HOME, basename, displayPath, isDir, isFile, listDir, resolvePath, type Vfs } from './vfs';
 
 export interface Seg {
@@ -28,6 +29,8 @@ export interface ShellState {
   /** for `cd -` */
   prev: string;
   history: string[];
+  /** "guest", or the name the visitor logged in with (lib/user.ts) */
+  user: string;
 }
 
 export type Effect =
@@ -37,6 +40,8 @@ export type Effect =
   | { type: 'cookies' }
   /** pick a colour theme (and save it on this device) */
   | { type: 'theme'; id: string }
+  /** log in (save the name on this device) or out (null: forget it) */
+  | { type: 'user'; name: string | null }
   /** a program that takes over the terminal for a while (lazy-loaded: programs/index.ts) */
   | { type: 'program'; name: ProgramName; args: string[] };
 
@@ -470,7 +475,7 @@ const CATEGORIES: [string, string[]][] = [
     'Just for fun',
     ['fortune', 'neofetch', 'matrix', 'aquarium', 'typing', 'snake', 'guess', 'hangman'],
   ],
-  ['Terminal', ['help', 'history', 'clear', 'theme', 'cookies', 'exit']],
+  ['Terminal', ['help', 'history', 'clear', 'theme', 'login', 'logout', 'cookies', 'exit']],
 ];
 
 /** what `help --all` and `man` say about the hidden commands */
@@ -503,7 +508,6 @@ const SECRET_DESC: Record<string, string> = {
   hello: 'say hi',
   hi: 'say hi',
   fastfetch: "neofetch's successor",
-  logout: 'same as exit',
 };
 
 function helpLines(all: boolean): Line[] {
@@ -583,8 +587,8 @@ export const COMMANDS: Record<string, Cmd> = {
   },
   whoami: {
     desc: 'who you are, and whose machine this is',
-    fn: () => [
-      [txt('guest')],
+    fn: (_, ctx) => [
+      [txt(ctx.state.user)],
       muted(`…but this is ${profile.name.split(' ')[0]}'s machine:`),
       [],
       line(txt(profile.name, 'accent')),
@@ -719,13 +723,13 @@ export const COMMANDS: Record<string, Cmd> = {
   },
   neofetch: {
     desc: 'the system, at a glance',
-    fn: () => {
+    fn: (_, ctx) => {
       // the N from the logo, drawn as the real SVG next to the lines (TermLine: c 'logo');
       // as text (pipes, copying) it is just blank space
       const width = 14;
       const art: Seg[][] = [[{ t: ' '.repeat(width), c: 'logo' }]];
       const info: Line[] = [
-        line(txt('guest', 'accent'), '@', txt('dev.nevcan.com', 'accent')),
+        line(txt(ctx.state.user, 'accent'), '@', txt('dev.nevcan.com', 'accent')),
         muted('-------------------'),
         line(txt('Owner    ', 'accent'), profile.name),
         line(txt('Role     ', 'accent'), profile.current),
@@ -767,6 +771,50 @@ export const COMMANDS: Record<string, Cmd> = {
       }),
       line(txt('Everything else: ', 'muted'), { t: 'cat .social', c: 'cmd', run: 'cat ~/.social' }),
     ],
+  },
+  login: {
+    desc: 'call yourself something other than guest',
+    usage: 'login <name>',
+    fn: (args, ctx) => {
+      const name = args[0];
+      const me = ctx.state.user;
+      if (!name)
+        return me === GUEST
+          ? [
+              ...err('login: usage: login <name>. Try: login ada'),
+              muted('The name stays in this browser; logout forgets it.'),
+            ]
+          : [
+              line(
+                'Logged in as ',
+                txt(me, 'accent'),
+                '. ',
+                { t: 'logout', c: 'cmd', run: 'logout' },
+                ' goes back to guest.',
+              ),
+            ];
+      const bad = badName(name);
+      if (bad) return err(`login: ${bad}`);
+      const reserved = reservedName(name);
+      if (reserved) return err(`login: ${reserved}`);
+      ctx.state = { ...ctx.state, user: name };
+      ctx.effects.push({ type: 'user', name });
+      return [
+        line('Hi, ', txt(name, 'accent'), '. You are logged in.'),
+        muted('Saved in this browser only, never sent anywhere. logout forgets it.'),
+      ];
+    },
+  },
+  logout: {
+    desc: 'back to guest, and forget the name (as a guest: same as exit)',
+    fn: (_, ctx) => {
+      const me = ctx.state.user;
+      // a guest has nothing to forget: logout closes the terminal, as it always did
+      if (me === GUEST) return COMMANDS.exit!.fn([], ctx);
+      ctx.state = { ...ctx.state, user: GUEST };
+      ctx.effects.push({ type: 'user', name: null });
+      return [line(`Bye, ${me}. You are a guest again; the name is forgotten.`)];
+    },
   },
   theme: {
     desc: 'colour theme',
@@ -942,7 +990,8 @@ export const COMMANDS: Record<string, Cmd> = {
   sudo: {
     desc: '',
     hidden: true,
-    fn: () => err('guest is not in the sudoers file. This incident will be reported.'),
+    fn: (_, ctx) =>
+      err(`${ctx.state.user} is not in the sudoers file. This incident will be reported.`),
   },
   rm: {
     desc: '',
@@ -976,7 +1025,6 @@ export const COMMANDS: Record<string, Cmd> = {
   hello: { desc: '', hidden: true, fn: () => [[txt('Hi! 👋 Type help, or just click around.')]] },
 };
 COMMANDS.hi = COMMANDS.hello!;
-COMMANDS.logout = { ...COMMANDS.exit!, hidden: true };
 // people type these too
 COMMANDS['--help'] = { ...COMMANDS.help!, hidden: true };
 COMMANDS['--help-all'] = { ...COMMANDS.help!, hidden: true, fn: () => helpLines(true) };

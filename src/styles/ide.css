@@ -1866,3 +1866,29 @@ button {
 .act-btn[aria-pressed='true'] {
   color: var(--text-strong);
 }
+
+/* ---------- log in (UserDialog) ---------- */
+
+.user-row {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0 0.5rem;
+}
+.user-row .search-input {
+  flex: 1;
+  height: 32px;
+}
+.user-row .btn {
+  flex: none;
+  margin-top: 0;
+}
+.user-problem {
+  margin: 0.4rem 0.5rem 0;
+  color: var(--err);
+  font-size: 0.76rem;
+}
+.user-out {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

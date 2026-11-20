@@ -17,7 +17,8 @@ import { SegView } from './TermLine';
 import { PROGRAMS } from './programs';
 
 export type TermItem =
-  | { id: number; kind: 'prompt'; cwd: string; cmd: string }
+  /** user: who typed it, so a later login doesn't rewrite earlier lines */
+  | { id: number; kind: 'prompt'; cwd: string; cmd: string; user: string }
   | { id: number; kind: 'out'; segs: Seg[] };
 
 export interface TerminalHandle {
@@ -29,6 +30,7 @@ export interface TerminalHandle {
 interface Props {
   items: TermItem[];
   cwd: string;
+  user: string;
   history: string[];
   open: boolean;
   onExec: (cmd: string) => void;
@@ -41,9 +43,11 @@ interface Props {
   onProgramExit: (lines?: Line[]) => void;
 }
 
-export const Prompt = ({ cwd }: { cwd: string }) => (
+export const Prompt = ({ cwd, user }: { cwd: string; user: string }) => (
   <span className="prompt" aria-hidden="true">
-    <span className="p-user">guest@{HOST}</span>
+    <span className="p-user">
+      {user}@{HOST}
+    </span>
     <span className="p-sep">:</span>
     <span className="p-path">{displayPath(cwd)}</span>
     <span className="p-sep">$</span>{' '}
@@ -54,6 +58,7 @@ const Terminal = forwardRef<TerminalHandle, Props>(function Terminal(
   {
     items,
     cwd,
+    user,
     history,
     onExec,
     onComplete,
@@ -134,7 +139,7 @@ const Terminal = forwardRef<TerminalHandle, Props>(function Terminal(
           {items.map((it) =>
             it.kind === 'prompt' ? (
               <div className="t-line" key={it.id}>
-                <Prompt cwd={it.cwd} />
+                <Prompt cwd={it.cwd} user={it.user} />
                 <span className="t-typed">{it.cmd}</span>
               </div>
             ) : (
@@ -150,7 +155,7 @@ const Terminal = forwardRef<TerminalHandle, Props>(function Terminal(
         {running && !prog.full ? running : null}
         {!program && (
           <label className="t-line t-input-row">
-            <Prompt cwd={cwd} />
+            <Prompt cwd={cwd} user={user} />
             <input
               ref={input}
               className="t-input"
