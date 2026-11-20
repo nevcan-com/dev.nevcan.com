@@ -86,21 +86,32 @@ Next:  www.nevcan.com
        film.nevcan.com
        game.nevcan.com
        shop.nevcan.com`,
-  '.social': `LinkedIn    linkedin.com/in/nevcanuludas
+  '.social': `# software
+LinkedIn    linkedin.com/in/nevcanuludas
 GitHub      github.com/nevcanuludas
 GitLab      gitlab.com/nevcanuludas
+Medium      medium.com/@nevcanuludas
+
+# academic
 ORCID       orcid.org/0009-0008-2027-4072
 Scholar     scholar.google.com/citations?user=DzEc7TgAAAAJ
+
+# diving
 GUE         gue.com/diver-training/gue-instructors/instructor-resume?id=20397
 GUE TV      gue.tv/authors/nev?via=nev
 Instagram   instagram.com/nevcanuludas
 YouTube     youtube.com/nevcanuludas
-Medium      medium.com/@nevcanuludas
-            medium.com/neptunsualti
+Medium      medium.com/neptunsualti
+
+# photogrammetry
 Sketchfab   sketchfab.com/nevcanuludas
+
+# elsewhere (quiet)
 X           x.com/nevcanuludas
 Bluesky     nevcanuludas.bsky.social
 Facebook    facebook.com/nevcanuludas
+
+# card
 Card        hihello.com/p/2a5123b0-641a-4681-8852-c963488baf28`,
 };
 
