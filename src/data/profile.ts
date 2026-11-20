@@ -5,12 +5,12 @@
  */
 export const profile = {
   name: 'Nevcan Uludaş',
-  headline: 'Software architect · co-founder & CTPO @ Dipnot',
+  headline: 'Software architect · technical co-founder @ Dipnot',
   location: 'Istanbul',
   /** Türkiye has been on UTC+3 all year since 2016 */
   timezone: 'Istanbul, UTC+3 all year',
   since: 2006,
-  current: 'Co-founder & CTPO @ Dipnot',
+  current: 'Technical co-founder @ Dipnot',
   languages: 'Turkish, English',
   email: 'dev@nevcan.com',
   links: [
