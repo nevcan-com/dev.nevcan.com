@@ -22,6 +22,8 @@ import CookiePane from './CookiePane';
 import ThemePicker from './ThemePicker';
 import SearchPanel from './SearchPanel';
 import { findRanges, type Hit } from '@/lib/search';
+import { GUEST, loadUser, saveUser } from '@/lib/user';
+import UserDialog from './UserDialog';
 import { pickTheme } from '@/lib/theme';
 import { themeById } from '@/data/themes';
 import CrashView from './CrashView';
@@ -41,8 +43,12 @@ interface Props {
   notFound?: boolean;
 }
 
+const welcomeLine = (user = GUEST): Line =>
+  user === GUEST
+    ? [{ t: `Welcome to dev.nevcan.com, ${profile.name}'s home directory.`, c: 'accent' }]
+    : [{ t: `Welcome back, ${user}. This is ${profile.name}'s home directory.`, c: 'accent' }];
 const welcome = (): Line[] => [
-  [{ t: `Welcome to dev.nevcan.com, ${profile.name}'s home directory.`, c: 'accent' }],
+  welcomeLine(),
   [
     {
       t: 'The files are on the left. This terminal works too: type a command, or click one.',
@@ -235,7 +241,14 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     return open;
   });
   const [items, setItems] = useState<TermItem[]>(() => outItems(welcome()));
-  const [shell, setShell] = useState<ShellState>({ cwd: '', prev: '', history: [] });
+  const [shell, setShell] = useState<ShellState>({
+    cwd: '',
+    prev: '',
+    history: [],
+    user: GUEST,
+  });
+  /** the log-in dialog (UserDialog.tsx) */
+  const [userPick, setUserPick] = useState(false);
   /** the cookie pane: null = closed; required = first visit, closes only with a choice */
   const [cookiePane, setCookiePane] = useState<{ required: boolean } | null>(null);
   /** the colour theme picker (ThemePicker.tsx) */
@@ -285,7 +298,9 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       const cleared = res.effects.some((e) => e.type === 'clear');
       setItems((it) => [
         ...(cleared ? [] : it),
-        ...(cleared ? [] : [{ id: nextId++, kind: 'prompt' as const, cwd: before.cwd, cmd }]),
+        ...(cleared
+          ? []
+          : [{ id: nextId++, kind: 'prompt' as const, cwd: before.cwd, cmd, user: before.user }]),
         ...outItems(res.lines),
       ]);
       for (const e of res.effects) {
@@ -295,6 +310,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           setProgram({ id: nextId++, name: e.name, args: e.args });
           setTerm((t) => (t === 'closed' || (t === 'auto' && isMobile()) ? 'open' : t));
         }
+        if (e.type === 'user') saveUser(e.name);
         if (e.type === 'theme') {
           const t = themeById(e.id);
           if (t) pickTheme(t);
@@ -340,7 +356,13 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     if (!notFound) return;
     setItems((it) => [
       ...it,
-      { id: nextId++, kind: 'prompt', cwd: '', cmd: `open ${location.pathname}` },
+      {
+        id: nextId++,
+        kind: 'prompt',
+        cwd: '',
+        cmd: `open ${location.pathname}`,
+        user: shellRef.current.user,
+      },
       ...outItems([
         [{ t: `open: ${location.pathname}: No such file or directory`, c: 'err' }],
         [{ t: '[process exited with code 404]', c: 'muted' }],
@@ -469,6 +491,17 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       c.title = `Run in the terminal: ${c.textContent}`;
     });
   }, [file, view]);
+
+  // a name saved by `login` on an earlier visit: the prompt, title bar and welcome use it
+  useEffect(() => {
+    const u = loadUser();
+    if (!u) return;
+    shellRef.current = { ...shellRef.current, user: u };
+    setShell((s) => ({ ...s, user: u }));
+    setItems((it) =>
+      it.map((x, i) => (i === 0 && x.kind === 'out' ? { ...x, segs: welcomeLine(u) } : x)),
+    );
+  }, []);
 
   // the stored cookie choice: applied on load; no choice yet opens the pane
   useEffect(() => {
@@ -672,6 +705,10 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       y: beside ? r.bottom : r.bottom + 4,
       items: [
         { label: 'Colour theme…', action: () => setThemePick(true) },
+        {
+          label: shell.user === GUEST ? 'Log in…' : `Logged in as ${shell.user}…`,
+          action: () => setUserPick(true),
+        },
         ...(analyticsOn ? [{ label: 'Cookie settings', action: openCookies }] : []),
       ],
     });
@@ -747,7 +784,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           </span>
         </a>
         <p className="title">
-          <span className="title-user">guest@{'dev.nevcan.com'}</span>
+          <span className="title-user">{shell.user}@dev.nevcan.com</span>
           <span className="title-path">{active ? ` — ${displayPath(active)}` : ''}</span>
         </p>
         <button
@@ -1054,6 +1091,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
               ref={termRef}
               items={items}
               cwd={shell.cwd}
+              user={shell.user}
               history={shell.history}
               open={term !== 'closed'}
               onExec={exec}
@@ -1061,7 +1099,13 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
               onShowOptions={(v, opts) =>
                 setItems((it) => [
                   ...it,
-                  { id: nextId++, kind: 'prompt', cwd: shellRef.current.cwd, cmd: v },
+                  {
+                    id: nextId++,
+                    kind: 'prompt',
+                    cwd: shellRef.current.cwd,
+                    cmd: v,
+                    user: shellRef.current.user,
+                  },
                   ...outItems([
                     opts.flatMap((o) => [
                       { t: o, c: o.endsWith('/') ? 'dir' : undefined },
@@ -1080,7 +1124,13 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
               onInterrupt={(v) =>
                 setItems((it) => [
                   ...it,
-                  { id: nextId++, kind: 'prompt', cwd: shellRef.current.cwd, cmd: v + '^C' },
+                  {
+                    id: nextId++,
+                    kind: 'prompt',
+                    cwd: shellRef.current.cwd,
+                    cmd: v + '^C',
+                    user: shellRef.current.user,
+                  },
                 ])
               }
             />
@@ -1090,6 +1140,13 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
 
       {menu && <ContextMenu {...menu} onClose={closeMenu} />}
       {themePick && <ThemePicker onClose={() => setThemePick(false)} />}
+      {userPick && (
+        <UserDialog
+          user={shell.user}
+          onSubmit={(cmd) => exec(cmd)}
+          onClose={() => setUserPick(false)}
+        />
+      )}
       <footer className="statusbar">
         <span className="sb-item sb-accent hide-mobile">⎇ main</span>
         <span className="sb-item sb-flash" aria-live="polite">
