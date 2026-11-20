@@ -246,6 +246,20 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
       order,
     );
   }
+  await p.ev(`document.querySelector('.act-btn[aria-label="Settings"]').click()`);
+  await sleep(200);
+  {
+    const gap =
+      await p.ev(`(() => { const b = document.querySelector('.act-btn[aria-label="Settings"]').getBoundingClientRect();
+      const m = document.querySelector('.ctx-menu').getBoundingClientRect();
+      return { bottom: Math.round(m.bottom - b.bottom), side: Math.round(m.left - b.right) } })()`);
+    check(
+      'the settings menu opens beside the gear, bottoms aligned',
+      Math.abs(gap.bottom) <= 1 && gap.side >= 0 && gap.side <= 4,
+      gap,
+    );
+  }
+  await p.key('Escape');
   check(
     'a "dev" tag next to the logo',
     (await p.ev(`document.querySelector('.tb-logo .tb-tag')?.textContent.trim()`)) === 'dev',

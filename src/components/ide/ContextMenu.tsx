@@ -13,9 +13,11 @@ interface Props {
   y: number;
   items: MenuItem[];
   onClose: () => void;
+  /** open upwards: (x, y) is the menu's bottom-left corner (the settings gear) */
+  up?: boolean;
 }
 
-export default function ContextMenu({ x, y, items, onClose }: Props) {
+export default function ContextMenu({ x, y, items, onClose, up = false }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ left: x, top: y });
 
@@ -25,10 +27,10 @@ export default function ContextMenu({ x, y, items, onClose }: Props) {
     const { width, height } = el.getBoundingClientRect();
     setPos({
       left: Math.max(4, Math.min(x, innerWidth - width - 4)),
-      top: Math.max(4, Math.min(y, innerHeight - height - 4)),
+      top: Math.max(4, Math.min(up ? y - height : y, innerHeight - height - 4)),
     });
     el.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true });
-  }, [x, y]);
+  }, [x, y, up]);
 
   useEffect(() => {
     const close = (e: Event) => {
