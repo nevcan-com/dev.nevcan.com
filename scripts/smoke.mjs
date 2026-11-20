@@ -255,6 +255,18 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     (await p.ev(`getComputedStyle(document.querySelector('.tb-logo')).textDecorationLine`)) ===
       'none',
   );
+  {
+    const ld = await p.ev(
+      `JSON.parse(document.querySelector('script[type="application/ld+json"]')?.textContent ?? 'null')`,
+    );
+    const person = ld?.['@graph']?.find((n) => n['@type'] === 'Person');
+    check(
+      'the home page has JSON-LD: a ProfilePage about Nev, with the shared @id',
+      person?.['@id'] === 'https://www.nevcan.com/#person' &&
+        ld['@graph'].some((n) => n['@type'] === 'ProfilePage'),
+      person?.['@id'],
+    );
+  }
   await p.run('date');
   {
     const out = await p.ev(

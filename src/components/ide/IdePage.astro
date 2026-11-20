@@ -4,6 +4,7 @@ import Base from '@/layouts/Base.astro';
 import Ide from './Ide';
 import { loadVfs } from '@/lib/load-fs';
 import { profile } from '@/data/profile';
+import { homeLd } from '@/data/structured';
 
 interface Props {
   path: string;
@@ -32,6 +33,11 @@ const title = notFound
     : `${file.title} · dev.nevcan.com`;
 ---
 
-<Base title={title} description={description} noindex={notFound}>
+<Base
+  title={title}
+  description={description}
+  noindex={notFound}
+  jsonLd={!notFound && file.route === '/' ? homeLd(title, description) : undefined}
+>
   <Ide client:load vfs={vfs} initialPath={path} notFound={notFound} />
 </Base>
