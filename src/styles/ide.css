@@ -20,6 +20,8 @@
 
 html,
 body {
+  /* no double-tap zoom (a quick second tap on a tab or a file zoomed in); pinch zoom stays */
+  touch-action: manipulation;
   margin: 0;
   height: 100%;
   background: var(--bg);
@@ -1785,6 +1787,12 @@ button {
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 5px;
+}
+/* iOS zooms into text fields under 16px: the search field and the username box */
+@media (max-width: 760px) {
+  .search-input {
+    font-size: 16px;
+  }
 }
 .search-input:focus {
   outline: none;
