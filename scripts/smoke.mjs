@@ -445,6 +445,19 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     );
   }
 
+  await p.run('cat ~/.social');
+  {
+    const links = await p.ev(
+      `[...document.querySelectorAll('.term-out a[href]')].map(a => a.href)`,
+    );
+    check(
+      '.social: the addresses are links (Bluesky to bsky.app, Scholar there too)',
+      links.includes('https://bsky.app/profile/nevcanuludas.bsky.social') &&
+        links.some((h) => h.startsWith('https://scholar.google.com/citations?user=')),
+      links.length,
+    );
+  }
+
   // the tab menu: right-click a tab
   {
     const tabs = () =>
