@@ -1892,3 +1892,8 @@ button {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+.ctx-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: none;
+}
