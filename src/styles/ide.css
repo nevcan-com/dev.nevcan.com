@@ -28,6 +28,41 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* scroll bars: thin and rounded, like macOS, on every system (Windows draws grey boxes with
+   arrows otherwise). Faint until the pointer is over the panel. Chromium and Safari use the
+   ::-webkit-scrollbar parts; Firefox only knows the standard properties. Chromium ignores the
+   ::-webkit parts once scrollbar-color is set, so the standard ones are kept for Firefox. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 22%, transparent);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 10px;
+}
+:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--muted) 45%, transparent);
+}
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--muted) 40%, transparent) transparent;
+  }
+}
+
 button {
   font: inherit;
   color: inherit;
@@ -94,6 +129,19 @@ button {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* on a desktop the title sits in the middle of the window, like an editor's; nothing on the
+   right balances the lights and the logo on the left */
+@media (min-width: 761px) {
+  .titlebar {
+    position: relative;
+  }
+  .title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100% - 22rem);
+  }
 }
 .title-user {
   color: var(--text);
@@ -788,8 +836,7 @@ button {
   }
   .hide-mobile,
   .activity,
-  .lights,
-  .tb-label {
+  .lights {
     display: none;
   }
   .ide .body,
@@ -868,9 +915,11 @@ button {
 /* ---------- logo, status bar links, images ---------- */
 
 .tb-logo {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex: none;
+  text-decoration: none;
   color: var(--text-strong);
   padding: 0.2rem 0.3rem;
   border-radius: 5px;
@@ -881,6 +930,15 @@ button {
 .tb-logo svg {
   width: 44px;
   height: 15px;
+}
+/* the site's tag next to the logo, as on dive.nevcan.com */
+.tb-tag {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 /* the links (Privacy, Terms, Cookies) never shrink or leave the screen; a note gives way */
@@ -1415,7 +1473,6 @@ button {
 }
 @media not all and (any-pointer: fine) {
   .terminal,
-  .tb-term,
   .act-term,
   .hide-touch {
     display: none !important;

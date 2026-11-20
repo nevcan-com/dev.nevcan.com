@@ -92,6 +92,38 @@ const line = (...segs: (Seg | string)[]): Line =>
 const err = (t: string): Line[] => [[txt(t, 'err')]];
 const muted = (t: string): Line => [txt(t, 'muted')];
 
+/** Nev's time zone (profile.ts: Istanbul, UTC+3 all year) */
+const NEV_TZ = 'Europe/Istanbul';
+
+/**
+ * `date`: the visitor's own time first, as the real command shows; then Nev's, when it differs,
+ * so someone abroad sees what time it is where Nev is.
+ */
+export function dateLines(now: Date): Line[] {
+  const at = (timeZone?: string) =>
+    now.toLocaleString('en-GB', {
+      timeZone,
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    });
+  const mine = at();
+  const nevs = at(NEV_TZ);
+  const clock = (timeZone?: string) =>
+    now.toLocaleString('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', day: 'numeric' });
+  if (clock() === clock(NEV_TZ))
+    return [line(mine, txt('   your time, the same as Nev’s in Istanbul', 'muted'))];
+  const w = Math.max(mine.length, nevs.length);
+  return [
+    line(mine.padEnd(w), txt('   your time', 'muted')),
+    line(nevs.padEnd(w), txt('   Nev’s time, Istanbul', 'muted')),
+  ];
+}
+
 const quote = (p: string) => (/\s/.test(p) ? `"${p}"` : p);
 
 /** whitespace split that keeps "quoted strings" together */
@@ -463,7 +495,7 @@ const SECRET_DESC: Record<string, string> = {
   ll: 'ls -la',
   man: 'the manual for a command',
   echo: 'says it back',
-  date: "today's date",
+  date: "your time, and Nev's in Istanbul",
   hostname: 'where you are',
   uname: 'what this runs on',
   git: 'git status (or st), git log, git lg',
@@ -889,7 +921,7 @@ export const COMMANDS: Record<string, Cmd> = {
     },
   },
   echo: { desc: '', hidden: true, fn: (args) => [[txt(args.join(' '))]] },
-  date: { desc: '', hidden: true, fn: () => [[txt(new Date().toString())]] },
+  date: { desc: '', hidden: true, fn: () => dateLines(new Date()) },
   hostname: { desc: '', hidden: true, fn: () => [[txt('dev.nevcan.com')]] },
   uname: {
     desc: '',

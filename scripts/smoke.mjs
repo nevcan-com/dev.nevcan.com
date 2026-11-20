@@ -177,9 +177,20 @@ async function open({ touch = false } = {}) {
     for (const t0 = Date.now(); Date.now() - t0 < ms; await sleep(200)) if (await fn()) return true;
     return false;
   };
+  /** move a real mouse over the middle of the element (hover, pointerenter) */
+  const hover = async (sel) => {
+    const r =
+      await ev(`(() => { const b = document.querySelector('${sel}')?.getBoundingClientRect();
+      return b && { x: b.x + b.width / 2, y: b.y + b.height / 2 } })()`);
+    if (!r) return;
+    await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: r.x - 40, y: r.y });
+    await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...r });
+    await sleep(200);
+  };
   return {
     ev,
     key,
+    hover,
     run,
     running,
     hint,
@@ -212,6 +223,33 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
   check('"Cookies" in the status bar opens it again', await p.pane());
   await p.reject();
   await sleep(300);
+
+  check(
+    'the title bar has no terminal button (the activity bar and the panel have one)',
+    !(await p.ev(
+      `!!document.querySelector('.titlebar .tb-term, .titlebar [aria-label="Terminal"]')`,
+    )),
+  );
+  check(
+    'a "dev" tag next to the logo',
+    (await p.ev(`document.querySelector('.tb-logo .tb-tag')?.textContent.trim()`)) === 'dev',
+  );
+  check(
+    'the logo and its tag are not underlined',
+    (await p.ev(`getComputedStyle(document.querySelector('.tb-logo')).textDecorationLine`)) ===
+      'none',
+  );
+  await p.run('date');
+  {
+    const out = await p.ev(
+      `[...document.querySelectorAll('.term-out .t-line')].slice(-2).map(l => l.textContent).join('\\n')`,
+    );
+    check(
+      "`date` shows your time and says how it relates to Nev's",
+      /your time/.test(out) && /Istanbul/.test(out),
+      out,
+    );
+  }
 
   check(
     'commands in the text are runnable',
@@ -366,6 +404,17 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
   check('Esc goes back to the theme you had', (await theme()) === 'default', await theme());
   check('Esc stores nothing', (await stored()) === null, await stored());
   await openPicker();
+  await p.hover('.theme-opt:nth-child(3)');
+  check('hovering a theme previews it', (await theme()) === 'dracula', await theme());
+  check('a hover stores nothing', (await stored()) === null, await stored());
+  await p.key('Escape');
+  check('Esc after a hover goes back', (await theme()) === 'default', await theme());
+  await openPicker();
+  check(
+    'a still mouse over the list previews nothing',
+    (await theme()) === 'default',
+    await theme(),
+  );
   await p.key('ArrowDown');
   await p.key('ArrowDown');
   await p.key('Enter');

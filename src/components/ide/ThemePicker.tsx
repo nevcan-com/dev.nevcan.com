@@ -1,5 +1,6 @@
 /**
- * The colour theme picker, like an editor's "Color Theme" quick pick: ↑ ↓ preview a theme live,
+ * The colour theme picker, like an editor's "Color Theme" quick pick: ↑ ↓ or the mouse hovering
+ * preview a theme live,
  * Enter or a click picks it, Esc (or a click outside) goes back to the one you had. Previewing
  * saves nothing; picking saves the theme on this device (lib/theme.ts).
  */
@@ -72,6 +73,12 @@ export default function ThemePicker({ onClose }: { onClose: () => void }) {
               className={`theme-opt${i === focus ? ' focused' : ''}`}
               onClick={() => pick(t)}
               onFocus={() => setFocus(i)}
+              // a mouse previews by hovering, as the arrows do; a touch has no hover. Only a real
+              // move counts: a browser sends a still mouse over the list as the picker opens
+              onPointerMove={(e) => {
+                if (e.pointerType === 'mouse' && (e.movementX || e.movementY) && i !== focus)
+                  move(i);
+              }}
             >
               <span className="theme-swatch" style={{ background: c.bg, borderColor: c.line }}>
                 {[c.accent, c.dir, c.warm, c.err].map((x) => (
@@ -93,7 +100,9 @@ export default function ThemePicker({ onClose }: { onClose: () => void }) {
         })}
       </div>
       <p className="theme-pick-foot">
-        <span className="hide-touch">↑ ↓ preview · Enter picks · Esc goes back · </span>
+        <span className="hide-touch">
+          Hover or ↑ ↓ to preview · click or Enter picks · Esc goes back ·{' '}
+        </span>
         <strong>Saved on this device</strong> when you pick one
       </p>
     </div>
