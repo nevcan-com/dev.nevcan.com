@@ -62,7 +62,7 @@ loadAnalytics();`,
 export const words: { word: string; hint: string }[] = [
   { word: 'kubernetes', hint: 'it runs your containers, and your weekends' },
   { word: 'idempotent', hint: 'run it twice, same result' },
-  { word: 'refactor', hint: 'same behaviour, better code' },
+  { word: 'refactor', hint: 'same behavior, better code' },
   { word: 'semaphore', hint: 'only so many at a time' },
   { word: 'hydration', hint: 'server HTML comes alive in the browser' },
   { word: 'debounce', hint: 'wait until they stop typing' },

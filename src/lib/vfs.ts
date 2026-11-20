@@ -71,7 +71,7 @@ export function listDir(vfs: Vfs, dir: string): Entry[] {
 }
 
 /**
- * Resolves what a visitor typed against the current directory. Returns the normalised path, or
+ * Resolves what a visitor typed against the current directory. Returns the normalized path, or
  * null when it leaves the home directory (the rest of the machine is off limits).
  */
 export function resolvePath(cwd: string, input: string): string | null {

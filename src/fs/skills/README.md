@@ -2,6 +2,8 @@
 
 What I do. The tools I use for it are in [stack](stack.md).
 
+- **Software architecture**: deciding how a whole product fits together, from data model and
+  security to the web and mobile apps; today as CTPO of Dipnot.
 - **Front-end architecture**: structuring large front ends so teams can build on them, from
   e-commerce at D&R to enterprise products at Doğuş Teknoloji and SabancıDx.
 - **End-to-end product development**: web, mobile and back end as one system, from data model

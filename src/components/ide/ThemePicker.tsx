@@ -1,5 +1,5 @@
 /**
- * The colour theme picker, like an editor's "Color Theme" quick pick: ↑ ↓ or the mouse hovering
+ * The color theme picker, like an editor's "Color Theme" quick pick: ↑ ↓ or the mouse hovering
  * preview a theme live,
  * Enter or a click picks it, Esc (or a click outside) goes back to the one you had. Previewing
  * saves nothing; picking saves the theme on this device (lib/theme.ts).
@@ -59,8 +59,8 @@ export default function ThemePicker({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div ref={box} className="theme-pick" role="dialog" aria-label="Colour theme">
-      <p className="theme-pick-title">Colour theme</p>
+    <div ref={box} className="theme-pick" role="dialog" aria-label="Color theme">
+      <p className="theme-pick-title">Color theme</p>
       <div ref={list} role="listbox" aria-label="Themes">
         {THEMES.map((t, i) => {
           const c = t.colors;

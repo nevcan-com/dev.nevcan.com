@@ -13,7 +13,7 @@ interface Props {
 }
 const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname.replace(/\.html$/, ''), Astro.site);
-/** for the inline script: each theme's background (the browser bar colour), by id */
+/** for the inline script: each theme's background (the browser bar color), by id */
 const themeBg = Object.fromEntries(THEMES.map((t) => [t.id, t.colors.bg]));
 const themeMaxAge = THEME_STORAGE.months * 30.44 * 24 * 60 * 60 * 1000;
 ---

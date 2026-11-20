@@ -1,11 +1,11 @@
 /**
- * Editor colour themes. The page's colour tokens come from here (Base.astro writes them as CSS),
+ * Editor color themes. The page's color tokens come from here (Base.astro writes them as CSS),
  * so a palette lives in one place. Nev Style (`nev-style`) is the default and is what visitors see until they
  * pick another one; the pick is kept in localStorage (`dev-theme`) only when they make it.
  *
- * The palettes follow the published colour schemes (all MIT licensed): Atom's One Dark, Dracula,
- * Solarized (Ethan Schoonover) and GitHub's Primer. Only colour values are used, no logos. Some
- * muted greys are a little brighter (or darker, on light) than the originals so small text
+ * The palettes follow the published color schemes (all MIT licensed): Atom's One Dark, Dracula,
+ * Solarized (Ethan Schoonover) and GitHub's Primer. Only color values are used, no logos. Some
+ * muted grays are a little brighter (or darker, on light) than the originals so small text
  * passes WCAG AA contrast (4.5:1) on the editor background.
  */
 
@@ -26,7 +26,7 @@ export interface Palette {
   muted: string;
   /** decoration only: punctuation, hints, rules */
   faint: string;
-  /** the theme's own colour: headings, prompt, links */
+  /** the theme's own color: headings, prompt, links */
   accent: string;
   /** directories and links in the terminal */
   dir: string;

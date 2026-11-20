@@ -10,7 +10,7 @@ _Last updated 20 November 2026_
   purposes.
 - **What you type stays in your browser.** The terminal runs entirely in your browser. Commands
   you type are not sent or stored anywhere, and the history is gone when you close the page.
-- **Your choices are remembered.** Your cookie choice, and a colour theme or a username if you
+- **Your choices are remembered.** Your cookie choice, and a color theme or a username if you
   choose one, are stored in your browser.
 - **Served from this site.** Fonts and images are served by this site's host, GitHub Pages (no
   third-party fonts or embeds); Google Analytics loads from Google only after you accept.
@@ -78,7 +78,7 @@ withdrew.
 
 Your choice itself is stored in your browser (local storage entry "dev-consent", kept for 12
 months, after which you are asked again). This is needed to respect your choice and needs no
-consent. A colour theme you pick is stored the same way ("dev-theme", 12 months); it never leaves
+consent. A color theme you pick is stored the same way ("dev-theme", 12 months); it never leaves
 your browser and needs no consent. A username you log in with is kept the same way ("dev-user",
 12 months): it is never sent anywhere, analytics included, and `logout` deletes it.
 

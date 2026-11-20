@@ -8,7 +8,7 @@ import { isInterrupt, useKeys, useTick, type ProgramProps } from './common';
 const version = `${new Date().getFullYear() - profile.since}.0.0`;
 const STEPS = [
   `fetching ${new Date().getFullYear() - profile.since} years of experience`,
-  'linking front-end architecture',
+  'linking software architecture',
   'installing dipnot (ctpo)',
   'building 140+ websites',
   'running tests',

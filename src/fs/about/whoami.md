@@ -1,6 +1,6 @@
 # whoami
 
-**Nevcan Uludaş** · Front-end architect · Co-founder & CTPO of [Dipnot](../projects/dipnot.md)
+**Nevcan Uludaş** · Software architect · Co-founder & CTPO of [Dipnot](../projects/dipnot.md)
 
 I've been building for the web since 2006, across startups, large e-commerce platforms and
 enterprise products: D&R's online stores, Doğuş Group's products at Doğuş Teknoloji, and Perfx,

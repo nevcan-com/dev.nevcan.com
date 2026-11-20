@@ -1,6 +1,6 @@
 # Nevcan Uludaş
 
-Front-end architect with twenty years in software. Today I'm co-founder & CTPO of
+Software architect with twenty years in software. Today I'm co-founder & CTPO of
 [Dipnot](projects/dipnot.md).
 
 This site is a small file system: everything about my work is a file you can open.
