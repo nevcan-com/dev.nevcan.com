@@ -4,6 +4,8 @@
  * the visitor logs in, never sent anywhere: not in the page title or URL, so analytics never see
  * it. Listed in legal/cookies.md and legal/privacy.md, like the theme (notes/legal.md, item 12).
  */
+import { fold } from './search';
+
 export const GUEST = 'guest';
 
 export const USER_STORAGE = {
@@ -23,11 +25,13 @@ export function badName(name: string): string | null {
   return null;
 }
 
-/** names that answer back instead of logging in */
+/** names that answer back instead of logging in (case and accents don't matter) */
 export function reservedName(name: string): string | null {
-  const n = name.toLowerCase();
+  const n = fold(name);
+  if (n === GUEST) return `${name}: that's everyone's. To go back to it: logout.`;
   if (n === 'root' || n === 'admin') return `${name}: nice try.`;
-  if (n === 'nevcan' || n === 'nev') return `${name}: that one's taken. Pick your own.`;
+  if (['nev', 'nevcan', 'nevcanuludas'].includes(n))
+    return `${name}: that one's taken. Pick your own.`;
   return null;
 }
 

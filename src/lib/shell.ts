@@ -793,8 +793,6 @@ export const COMMANDS: Record<string, Cmd> = {
                 ' goes back to guest.',
               ),
             ];
-      if (name.toLowerCase() === GUEST)
-        return me === GUEST ? [muted('You are a guest already.')] : COMMANDS.logout!.fn([], ctx);
       const bad = badName(name);
       if (bad) return err(`login: ${bad}`);
       const reserved = reservedName(name);

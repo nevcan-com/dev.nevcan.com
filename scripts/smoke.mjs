@@ -452,8 +452,14 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     check('no name stored before a login', (await stored()) === null, await stored());
     await p.run('login <b>x</b>');
     check('a name with markup is refused', (await stored()) === null, await stored());
-    await p.run('login root');
-    check('root is refused', (await stored()) === null, await stored());
+    for (const n of ['root', 'guest', 'Nev', 'nevcan', 'NevcanUludaş']) {
+      await p.run(`login ${n}`);
+      check(
+        `${n} is refused`,
+        (await stored()) === null && (await title()) === 'guest@dev.nevcan.com',
+        await stored(),
+      );
+    }
     await p.run('login ada');
     check(
       '`login ada` stores it and the title bar says ada',
