@@ -10,8 +10,10 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  /** structured data (JSON-LD), on the pages that have it */
+  jsonLd?: object;
 }
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, jsonLd } = Astro.props;
 const canonical = new URL(Astro.url.pathname.replace(/\.html$/, ''), Astro.site);
 /** for the inline script: each theme's background (the browser bar color), by id */
 const themeBg = Object.fromEntries(THEMES.map((t) => [t.id, t.colors.bg]));
@@ -36,6 +38,7 @@ const themeMaxAge = THEME_STORAGE.months * 30.44 * 24 * 60 * 60 * 1000;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="author" content={profile.name} />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <style is:global set:html={themeCss()}></style>
     {/* the picked theme, before the first paint (lib/theme.ts reads and writes the same entry) */}
     <script is:inline define:vars={{ key: THEME_STORAGE.key, themeBg, themeMaxAge }}>
