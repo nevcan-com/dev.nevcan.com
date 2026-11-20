@@ -78,6 +78,7 @@ Next:  www.nevcan.com
 GitHub      github.com/nevcanuludas
 GitLab      gitlab.com/nevcanuludas
 ORCID       orcid.org/0009-0008-2027-4072
+Scholar     scholar.google.com/citations?user=DzEc7TgAAAAJ
 GUE         gue.com/diver-training/gue-instructors/instructor-resume?id=20397
 GUE TV      gue.tv/authors/nev?via=nev
 Instagram   instagram.com/nevcanuludas
