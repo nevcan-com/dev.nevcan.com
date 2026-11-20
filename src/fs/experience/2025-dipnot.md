@@ -1,15 +1,19 @@
-# Co-founder & CTPO · Dipnot
+# Technical co-founder · Dipnot
 
 **Since 2025** · Istanbul, remote · [dipnot.app](https://dipnot.app)
 
 Dipnot is a Turkish publication on diving, underwater photography and marine life: an editorial
-magazine with a community around it. I lead product, technology and brand, working with the
-editor-in-chief and the revenue lead.
+magazine with a community around it.
 
-- Built the platform as a one-person engineering team: a React Native mobile app for readers,
-  live on the App Store and Google Play; a Next.js platform for the editorial team; the website;
-  and the Firebase back end behind them.
-- Own the architecture, data model and security, and run the delivery process: a written
-  backlog, short cycles and small, frequent releases.
+I decide what the product does and how it works, and I build it: Dipnot's only engineer, working
+with AI coding agents under written rules and reviewing every change.
+
+- Designed the architecture and built the platform: the reader app (React Native, on the App
+  Store and Google Play), the admin platform (Next.js), the website and the Firebase back end,
+  with role-based access and default-deny security rules.
+- Designed the brand and its design system: logo, colors, typography, motion and voice, with
+  WCAG AA contrast and light and dark modes everywhere.
+- Set the engineering standards: tests, type checks and dependency audits in every repository,
+  versioned releases, and backups with point-in-time recovery.
 
 More in [projects/dipnot](../projects/dipnot.md).

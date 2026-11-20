@@ -1,6 +1,6 @@
 # whoami
 
-**Nevcan Uludaş** · Software architect · Co-founder & CTPO of [Dipnot](../projects/dipnot.md)
+**Nevcan Uludaş** · Software architect · Technical co-founder of [Dipnot](../projects/dipnot.md)
 
 I've been building for the web since 2006, across startups, large e-commerce platforms and
 enterprise products: D&R's online stores, Doğuş Group's products at Doğuş Teknoloji, and Perfx,
@@ -24,10 +24,10 @@ More at [dive.nevcan.com](https://dive.nevcan.com).
 
 ## At a glance
 
-|                   |                                                     |
-| ----------------- | --------------------------------------------------- |
-| Based in          | Istanbul, Türkiye · UTC+3 all year                  |
-| Working on        | Dipnot (CTPO) · master's thesis, Akdeniz University |
-| In software since | 2006                                                |
-| Diving            | Since 2008 · instructor since 2011                  |
-| Languages         | Turkish (native) · English (professional)           |
+|                   |                                                                     |
+| ----------------- | ------------------------------------------------------------------- |
+| Based in          | Istanbul, Türkiye · UTC+3 all year                                  |
+| Working on        | Dipnot (technical co-founder) · master's thesis, Akdeniz University |
+| In software since | 2006                                                                |
+| Diving            | Since 2008 · instructor since 2011                                  |
+| Languages         | Turkish (native) · English (professional)                           |

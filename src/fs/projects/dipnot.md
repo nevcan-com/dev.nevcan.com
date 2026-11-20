@@ -1,6 +1,6 @@
 # Dipnot
 
-**Since 2025** · co-founder & CTPO · [dipnot.app](https://dipnot.app)
+**Since 2025** · technical co-founder · [dipnot.app](https://dipnot.app)
 
 A Turkish publication on diving, underwater photography and marine life: articles and news for
 readers, and a community around them. Members save articles, follow the categories they care

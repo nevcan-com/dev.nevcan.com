@@ -45,7 +45,7 @@ export function homeLd(title: string, description: string) {
         name: profile.name,
         alternateName: 'Nev',
         url: 'https://www.nevcan.com/',
-        // "Software architect · co-founder & CTPO @ Dipnot" → "Software architect"
+        // "Software architect · technical co-founder @ Dipnot" → "Software architect"
         jobTitle: profile.headline.split('·')[0]!.trim(),
         worksFor: { '@type': 'Organization', name: 'Dipnot', url: 'https://dipnot.app' },
         sameAs: SAME_AS,

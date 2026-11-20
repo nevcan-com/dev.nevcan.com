@@ -30,7 +30,7 @@ export const fortunes: { text: string; by?: string }[] = [
  * and move every second: it's a joke, not a claim.
  */
 export const processes: { command: string; since: number; until?: number; state: 'R' | 'S' }[] = [
-  { command: 'dipnot --role=ctpo', since: 2025, state: 'R' },
+  { command: 'dipnot --cofounder --tech', since: 2025, state: 'R' },
   { command: 'thesis --amphorae --ai', since: 2025, state: 'R' },
   { command: 'dev.nevcan.com', since: 2026, state: 'R' },
   { command: 'gue --instructor-trainer', since: 2026, state: 'R' },

@@ -9,7 +9,7 @@ const version = `${new Date().getFullYear() - profile.since}.0.0`;
 const STEPS = [
   `fetching ${new Date().getFullYear() - profile.since} years of experience`,
   'linking software architecture',
-  'installing dipnot (ctpo)',
+  'installing dipnot (technical co-founder)',
   'building 140+ websites',
   'running tests',
 ];
