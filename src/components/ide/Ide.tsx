@@ -83,6 +83,16 @@ let nextId = 0;
 const outItems = (lines: Line[]): TermItem[] =>
   lines.map((segs) => ({ id: nextId++, kind: 'out', segs }));
 
+/** GitHub's own mark (filled, 16×16), for the link to the GitHub profile, which GitHub's logo
+ *  guidelines allow; the other icons are drawn in strokes */
+const GITHUB_MARK =
+  'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z';
+const GithubMark = () => (
+  <svg className="brand-mark" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
+    <path d={GITHUB_MARK} fill="currentColor" />
+  </svg>
+);
+
 const Icon = ({ d, label }: { d: string; label?: string }) => (
   <svg
     viewBox="0 0 24 24"
@@ -112,8 +122,6 @@ const ICON = {
   linkedin:
     'M4.5 4.5h15v15h-15zM8.5 10.5V16M8.5 7.8v.1M11.5 16v-5.5M11.5 13c0-1.6 1-2.6 2.3-2.6s2.2.9 2.2 2.6V16',
   svg: 'M4.5 4.5h15v15h-15zM4.5 16l4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5M15 9h.01',
-  github:
-    'M7 4.5v10M7 14.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM7 4.5a0 0 0 0 0 0 0M17 9.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17 9.5c0 4-10 2-10 5',
   md: 'M3.5 6.5h17v11h-17zM6.5 14.5v-5l2 2.5 2-2.5v5M15.5 9.5v5M13.5 12.5l2 2 2-2',
   collapseAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5',
   expandAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5M10 11.25v5',
@@ -639,7 +647,12 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     setTermMax(false);
   };
   // ---------- right-click menu ----------
-  const [menu, setMenu] = useState<{ x: number; y: number; items: MenuItem[] } | null>(null);
+  const [menu, setMenu] = useState<{
+    x: number;
+    y: number;
+    up?: boolean;
+    items: MenuItem[];
+  } | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const flashTimer = useRef(0);
   const notify = (msg: string) => {
@@ -793,8 +806,10 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     const r = e.currentTarget.getBoundingClientRect();
     const beside = r.left < 60; // the activity bar: to its right; the title bar: below it
     setMenu({
-      x: beside ? r.right + 4 : r.left,
-      y: beside ? r.bottom : r.bottom + 4,
+      // beside the gear, bottoms aligned, just past the bar's edge; on a phone, just below it
+      x: beside ? r.right + 1 : r.left,
+      y: beside ? r.bottom : r.bottom + 2,
+      up: beside,
       items: [
         { label: 'Color theme…', action: () => setThemePick(true) },
         {
@@ -931,7 +946,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
             title="GitHub"
             aria-label="GitHub"
           >
-            <Icon d={ICON.github} />
+            <GithubMark />
           </a>
           <a
             className="act-btn"
