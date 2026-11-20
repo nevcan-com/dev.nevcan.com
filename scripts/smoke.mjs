@@ -630,6 +630,19 @@ console.log('\ntouch-only');
   check('no terminal', !(await shown('.terminal')));
   check('no terminal button in the title bar', !(await shown('.tb-term')));
   check('a search button in the title bar', await shown('.tb-btn[aria-label="Search"]'));
+  check('no Preview/Source toggle', !(await shown('.view-toggle')));
+  await p.ev(`document.querySelector('.tb-btn[aria-label="Search"]').click()`);
+  await sleep(300);
+  {
+    const size = await p.ev(`getComputedStyle(document.querySelector('.search-input')).fontSize`);
+    check('text fields are 16px, so iOS does not zoom into them', size === '16px', size);
+  }
+  check(
+    'no double-tap zoom',
+    (await p.ev(`getComputedStyle(document.body).touchAction`)) === 'manipulation',
+  );
+  await p.ev(`document.querySelector('.explorer .icon-btn[aria-label^="Close"]')?.click()`);
+  await sleep(300);
   check('a settings button in the title bar', await shown('.tb-btn[aria-label="Settings"]'));
   await p.ev(`document.querySelector('.tb-btn[aria-label="Settings"]').click()`);
   await sleep(300);

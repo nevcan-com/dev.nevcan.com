@@ -1022,7 +1022,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
                   ))}
                 </div>
                 {file && (
-                  <div className="view-toggle" role="group" aria-label="View">
+                  <div className="view-toggle hide-mobile" role="group" aria-label="View">
                     <button
                       type="button"
                       aria-pressed={view === 'preview'}
