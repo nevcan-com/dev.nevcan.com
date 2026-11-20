@@ -51,7 +51,7 @@ const welcome = (): Line[] => [
   welcomeLine(),
   [
     {
-      t: 'The files are on the left. This terminal works too: type a command, or click one.',
+      t: 'The files are on the left. This terminal works too: type a command, or click one. Nothing here can break.',
       c: 'muted',
     },
   ],

@@ -5,6 +5,9 @@ Software architect with twenty years in software. Today I'm co-founder & CTPO of
 
 This site is a small file system: everything about my work is a file you can open.
 
+Click anything, type anything: nothing here can break. If you get lost, the logo at the top
+brings you back to this page.
+
 ## Two ways to look around
 
 - **Click.** The files are in the explorer: on the left on a computer, behind the files icon at
