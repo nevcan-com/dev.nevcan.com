@@ -196,6 +196,12 @@ button {
 .act-spacer {
   flex: 1;
 }
+.act-sep {
+  width: 24px;
+  height: 1px;
+  margin: 0.3rem 0;
+  background: var(--line);
+}
 
 /* ---------- explorer ---------- */
 

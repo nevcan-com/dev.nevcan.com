@@ -230,6 +230,16 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
       `!!document.querySelector('.titlebar .tb-term, .titlebar [aria-label="Terminal"]')`,
     )),
   );
+  {
+    const order = await p.ev(
+      `[...document.querySelectorAll('.activity .act-btn')].map(b => b.getAttribute('aria-label')).join(', ')`,
+    );
+    check(
+      'activity bar: panels, then GitHub and LinkedIn, Settings at the bottom',
+      /^Explorer, Terminal, GitHub, LinkedIn, .*Settings$/.test(order),
+      order,
+    );
+  }
   check(
     'a "dev" tag next to the logo',
     (await p.ev(`document.querySelector('.tb-logo .tb-tag')?.textContent.trim()`)) === 'dev',
@@ -386,7 +396,11 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
   const stored = () => p.ev(`localStorage.getItem('dev-theme')`);
   const theme = () => p.ev(`document.documentElement.dataset.theme ?? 'default'`);
   const openPicker = async () => {
-    await p.ev(`document.querySelector('.act-btn[aria-label="Colour theme"]').click()`);
+    await p.ev(`document.querySelector('.act-btn[aria-label="Settings"]').click()`);
+    await sleep(200);
+    await p.ev(
+      `[...document.querySelectorAll('.ctx-item')].find(b => b.textContent.startsWith('Colour theme'))?.click()`,
+    );
     await sleep(300);
   };
   check('no theme stored before a pick', (await stored()) === null, await stored());
@@ -454,7 +468,16 @@ console.log('\ntouch-only');
   await p.reject();
   check('no terminal', !(await shown('.terminal')));
   check('no terminal button in the title bar', !(await shown('.tb-term')));
-  check('a theme button in the title bar', await shown('.tb-btn[aria-label="Colour theme"]'));
+  check('a settings button in the title bar', await shown('.tb-btn[aria-label="Settings"]'));
+  await p.ev(`document.querySelector('.tb-btn[aria-label="Settings"]').click()`);
+  await sleep(300);
+  check(
+    'it opens a menu with the colour theme',
+    (
+      await p.ev(`[...document.querySelectorAll('.ctx-item')].map(b => b.textContent).join('|')`)
+    )?.includes('Colour theme'),
+  );
+  await p.key('Escape');
   check('the status bar says the terminal needs a keyboard', await shown('.only-touch'));
   check(
     'commands in the text are not runnable',
