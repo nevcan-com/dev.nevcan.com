@@ -39,6 +39,7 @@ import {
   type ShellState,
 } from '@/lib/shell';
 import Wiped from './Wiped';
+import BranchPicker from './BranchPicker';
 import { basename, dirname, displayPath, langOf, listDir, pathForRoute, type Vfs } from '@/lib/vfs';
 import { profile } from '@/data/profile';
 import { analyticsOn } from '@/data/analytics';
@@ -118,7 +119,6 @@ const ICON = {
   chevron: 'M9 6l6 6-6 6',
   max: 'M6 14l6-6 6 6',
   min: 'M6 10l6 6 6-6',
-  dive: 'M3 15c2 0 2-1.5 4-1.5S9 15 11 15s2-1.5 4-1.5 2 1.5 4 1.5M3 19c2 0 2-1.5 4-1.5S9 19 11 19s2-1.5 4-1.5 2 1.5 4 1.5M12 3v7M9 7l3 3 3-3',
   linkedin:
     'M4.5 4.5h15v15h-15zM8.5 10.5V16M8.5 7.8v.1M11.5 16v-5.5M11.5 13c0-1.6 1-2.6 2.3-2.6s2.2.9 2.2 2.6V16',
   svg: 'M4.5 4.5h15v15h-15zM4.5 16l4.5-4.5 3.5 3.5 2.5-2.5 4.5 4.5M15 9h.01',
@@ -270,6 +270,8 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     history: [],
     user: GUEST,
   });
+  /** ⎇ main: the other nevcan.com sites (BranchPicker.tsx) */
+  const [branchPick, setBranchPick] = useState(false);
   /** the log-in dialog (UserDialog.tsx) */
   const [userPick, setUserPick] = useState(false);
   /** `rm -rf`: running (no prompt, can't be stopped), what is gone so far, and the end */
@@ -339,6 +341,8 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
         }
         if (e.type === 'user') saveUser(e.name);
         if (e.type === 'wipe') setWiping(true);
+        // a moment to read "Switched to branch", then the other site, in this tab
+        if (e.type === 'goto') setTimeout(() => location.assign(e.url), 700);
         if (e.type === 'theme') {
           const t = themeById(e.id);
           if (t) pickTheme(t);
@@ -958,15 +962,6 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           >
             <Icon d={ICON.linkedin} />
           </a>
-          {/* until the branch picker takes it over (⎇ main → diving) */}
-          <a
-            className="act-btn"
-            href="https://dive.nevcan.com"
-            title="dive.nevcan.com"
-            aria-label="dive.nevcan.com"
-          >
-            <Icon d={ICON.dive} />
-          </a>
           <span className="act-spacer" />
           <button
             type="button"
@@ -1257,6 +1252,17 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       {menu && <ContextMenu {...menu} onClose={closeMenu} />}
       {wiped && <Wiped />}
       {themePick && <ThemePicker onClose={() => setThemePick(false)} />}
+      {branchPick && (
+        <BranchPicker
+          onPick={(name) => {
+            openInTerminal(`git checkout ${name}`);
+            // the status bar says it too (a phone has no terminal)
+            if (name === 'main') notify("Already on 'main'");
+            else if (name === 'dev') notify("dev is main: you're already here");
+          }}
+          onClose={() => setBranchPick(false)}
+        />
+      )}
       {userPick && (
         <UserDialog
           user={shell.user}
@@ -1265,7 +1271,15 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
         />
       )}
       <footer className="statusbar">
-        <span className="sb-item sb-accent hide-mobile">⎇ main</span>
+        <button
+          type="button"
+          className="sb-item sb-accent sb-branch"
+          onClick={() => setBranchPick(true)}
+          title="Switch branch: the other nevcan.com sites"
+          aria-haspopup="dialog"
+        >
+          ⎇ main
+        </button>
         <span className="sb-item sb-flash" aria-live="polite">
           {flash}
         </span>

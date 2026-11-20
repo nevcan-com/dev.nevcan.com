@@ -484,6 +484,43 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     );
   }
 
+  // branches: the other nevcan.com sites
+  {
+    const out = () =>
+      p.ev(
+        `[...document.querySelectorAll('.term-out .t-line')].slice(-6).map(l => l.textContent).join('\\n')`,
+      );
+    check(
+      'no dive icon in the activity bar',
+      !(await p.ev(`!!document.querySelector('.activity a[href*="dive.nevcan.com"]')`)),
+    );
+    await p.run('git branch');
+    check(
+      'git branch: main starred, dive, fit and www listed',
+      /\* main/.test(await out()) &&
+        /dive/.test(await out()) &&
+        /fit/.test(await out()) &&
+        /www\.nevcan\.com/.test(await out()),
+      await out(),
+    );
+    await p.run('git co dev');
+    check('git co dev: dev is main', /same branch/.test(await out()), await out());
+    await p.run('git checkout nope');
+    check(
+      'git checkout nope: pathspec error',
+      /pathspec 'nope'/.test(await p.lastLine()),
+      await p.lastLine(),
+    );
+    await p.ev(`document.querySelector('.sb-branch').click()`);
+    await sleep(300);
+    check(
+      '⎇ main opens the branch list',
+      (await p.ev(`document.querySelectorAll('.branch-pick [role="option"]').length`)) === 5,
+    );
+    await p.key('Escape');
+    check('Esc closes it', !(await p.ev(`!!document.querySelector('.branch-pick')`)));
+  }
+
   // the tab menu: right-click a tab
   {
     const tabs = () =>
@@ -725,6 +762,7 @@ console.log('\ntouch-only');
   await p.reject();
   check('no terminal', !(await shown('.terminal')));
   check('no terminal button in the title bar', !(await shown('.tb-term')));
+  check('⎇ main in the status bar', await shown('.sb-branch'));
   check('a search button in the title bar', await shown('.tb-btn[aria-label="Search"]'));
   check('no Preview/Source toggle', !(await shown('.view-toggle')));
   await p.ev(`document.querySelector('.tb-btn[aria-label="Search"]').click()`);
