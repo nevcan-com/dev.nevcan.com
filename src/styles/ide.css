@@ -1,7 +1,7 @@
 /* dev.nevcan.com: one editor window. The accent is the brand mint from the N favicon. */
 
 :root {
-  /* colours: src/data/themes.ts (Base.astro writes them per theme); these follow from them */
+  /* colors: src/data/themes.ts (Base.astro writes them per theme); these follow from them */
   --accent-dim: color-mix(in srgb, var(--accent) 14%, transparent);
   --accent-soft: color-mix(in srgb, var(--accent) 35%, transparent);
   --err-dim: color-mix(in srgb, var(--err) 13%, transparent);
@@ -28,7 +28,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* scroll bars: thin and rounded, like macOS, on every system (Windows draws grey boxes with
+/* scroll bars: thin and rounded, like macOS, on every system (Windows draws gray boxes with
    arrows otherwise). Faint until the pointer is over the panel. Chromium and Safari use the
    ::-webkit-scrollbar parts; Firefox only knows the standard properties. Chromium ignores the
    ::-webkit parts once scrollbar-color is set, so the standard ones are kept for Firefox. */
@@ -527,7 +527,7 @@ button {
   letter-spacing: 0.05em;
 }
 
-/* Source: line numbers + light syntax colours */
+/* Source: line numbers + light syntax colors */
 .source {
   margin: 0;
   padding: 0.75rem 0 4rem;
@@ -965,7 +965,7 @@ button {
   color: var(--text-strong);
 }
 
-/* an image file in Preview: centred on a checkerboard, like an image viewer */
+/* an image file in Preview: centered on a checkerboard, like an image viewer */
 .prose .asset {
   display: grid;
   justify-items: center;
@@ -1162,7 +1162,7 @@ button {
   transform: translate(1.1rem, -50%);
 }
 
-/* every choice looks the same, in colour, size and type */
+/* every choice looks the same, in color, size and type */
 .cc-actions {
   display: grid;
   grid-auto-columns: 1fr;
@@ -1624,7 +1624,7 @@ button {
   font-weight: 500;
 }
 
-/* ---------- colour theme picker ---------- */
+/* ---------- color theme picker ---------- */
 
 .theme-pick {
   position: fixed;

@@ -553,14 +553,14 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     await p.run('logout');
   }
 
-  // colour themes: a preview saves nothing, only a pick does (notes/legal.md, item 12)
+  // color themes: a preview saves nothing, only a pick does (notes/legal.md, item 12)
   const stored = () => p.ev(`localStorage.getItem('dev-theme')`);
   const theme = () => p.ev(`document.documentElement.dataset.theme ?? 'default'`);
   const openPicker = async () => {
     await p.ev(`document.querySelector('.act-btn[aria-label="Settings"]').click()`);
     await sleep(200);
     await p.ev(
-      `[...document.querySelectorAll('.ctx-item')].find(b => b.textContent.startsWith('Colour theme'))?.click()`,
+      `[...document.querySelectorAll('.ctx-item')].find(b => b.textContent.startsWith('Color theme'))?.click()`,
     );
     await sleep(300);
   };
@@ -634,10 +634,10 @@ console.log('\ntouch-only');
   await p.ev(`document.querySelector('.tb-btn[aria-label="Settings"]').click()`);
   await sleep(300);
   check(
-    'it opens a menu with the colour theme',
+    'it opens a menu with the color theme',
     (
       await p.ev(`[...document.querySelectorAll('.ctx-item')].map(b => b.textContent).join('|')`)
-    )?.includes('Colour theme'),
+    )?.includes('Color theme'),
   );
   await p.key('Escape');
   check('the status bar says the terminal needs a keyboard', await shown('.only-touch'));

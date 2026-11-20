@@ -28,14 +28,14 @@ interface Fish {
   y: number;
   speed: number;
   kind: number;
-  colour: string;
+  color: string;
 }
 interface Bubble {
   x: number;
   y: number;
 }
 
-const COLOURS = ['accent', 'cmd', 'dir', 'file'];
+const COLORS = ['accent', 'cmd', 'dir', 'file'];
 const rnd = (n: number) => Math.floor(Math.random() * n);
 
 type Cell = { ch: string; c?: string };
@@ -56,7 +56,7 @@ export default function Aquarium({ exit }: ProgramProps) {
       y: 1 + rnd(Math.max(1, rows - 4)),
       speed: (Math.random() < 0.5 ? -1 : 1) * (0.25 + Math.random() * 0.6),
       kind: rnd(FISH.length),
-      colour: COLOURS[rnd(COLOURS.length)]!,
+      color: COLORS[rnd(COLORS.length)]!,
     }));
   }, [cols, rows]);
 
@@ -120,14 +120,14 @@ export default function Aquarium({ exit }: ProgramProps) {
     const jy = 2 + Math.round((Math.sin(t / 10) + 1) * Math.max(1, (rows - 8) / 2));
     JELLY.forEach((l, i) => put(jx, jy + i, l, 'cmd'));
     for (const b of bubbles.current) put(b.x, b.y, Math.random() < 0.5 ? 'o' : '°', 'dir');
-    for (const f of fish.current) put(f.x, f.y, FISH[f.kind]![f.speed > 0 ? 0 : 1], f.colour);
+    for (const f of fish.current) put(f.x, f.y, FISH[f.kind]![f.speed > 0 ? 0 : 1], f.color);
   }
 
   return (
     <div className="prog-aquarium" ref={box} aria-label="An ASCII aquarium">
       <pre>
         {grid.map((row, y) => {
-          // runs of the same colour become one span
+          // runs of the same color become one span
           const runs: { c?: string; s: string }[] = [];
           for (const cell of row) {
             const last = runs[runs.length - 1];

@@ -38,7 +38,7 @@ export type Effect =
   | { type: 'clear' }
   | { type: 'terminal'; state: 'closed' }
   | { type: 'cookies' }
-  /** pick a colour theme (and save it on this device) */
+  /** pick a color theme (and save it on this device) */
   | { type: 'theme'; id: string }
   /** log in (save the name on this device) or out (null: forget it) */
   | { type: 'user'; name: string | null }
@@ -211,7 +211,7 @@ function treeLines(ctx: Ctx, dir: string, prefix = ''): Line[] {
   });
 }
 
-/** Markdown source with light colouring, for `cat` */
+/** Markdown source with light coloring, for `cat` */
 const mdLines = (raw: string): Line[] =>
   raw
     .replace(/\n+$/, '')
@@ -817,7 +817,7 @@ export const COMMANDS: Record<string, Cmd> = {
     },
   },
   theme: {
-    desc: 'colour theme',
+    desc: 'color theme',
     usage: 'theme [name]',
     fn: (args, ctx) => {
       const name = args[0]?.toLowerCase();

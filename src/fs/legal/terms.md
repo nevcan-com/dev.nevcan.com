@@ -1,6 +1,6 @@
 # Terms of use
 
-_Last updated 15 November 2026_
+_Last updated 20 November 2026_
 
 By using dev.nevcan.com you agree to these terms.
 
@@ -15,7 +15,7 @@ changed.
 Everything on this site (text, design, logo and code) is © Nevcan Uludaş, all rights reserved.
 You're welcome to read it, link to it and quote short parts with a link back. Copying, modifying or
 reusing anything else needs my written permission first. If the site's source code is publicly
-readable, that does not grant a licence.
+readable, that does not grant a license.
 
 Company and product names belong to their owners and are mentioned only to describe my work.
 

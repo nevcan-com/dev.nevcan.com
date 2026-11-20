@@ -1,5 +1,5 @@
 /**
- * Source view: the file (Markdown or SVG) with line numbers and light syntax colouring. A small
+ * Source view: the file (Markdown or SVG) with line numbers and light syntax coloring. A small
  * line-based tokenizer is enough for the handful of constructs these files use.
  */
 import { Fragment, type ReactNode } from 'react';

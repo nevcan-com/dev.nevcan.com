@@ -1,5 +1,5 @@
 /**
- * The colour theme on the page. Base.astro's inline script applies a saved pick before the first
+ * The color theme on the page. Base.astro's inline script applies a saved pick before the first
  * paint; this module previews and saves. Previewing never writes anything; only `pickTheme` does,
  * and picking the default removes the entry instead (notes/legal.md, item 12).
  */

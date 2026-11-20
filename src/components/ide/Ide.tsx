@@ -251,7 +251,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   const [userPick, setUserPick] = useState(false);
   /** the cookie pane: null = closed; required = first visit, closes only with a choice */
   const [cookiePane, setCookiePane] = useState<{ required: boolean } | null>(null);
-  /** the colour theme picker (ThemePicker.tsx) */
+  /** the color theme picker (ThemePicker.tsx) */
   const [themePick, setThemePick] = useState(false);
   const [consent, setConsent] = useState(false);
   const shellRef = useRef(shell);
@@ -331,7 +331,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   /** clicks in the explorer and the preview run through the shell, so the terminal teaches */
   const openViaShell = useCallback((path: string) => exec(`open ~/${path}`), [exec]);
 
-  /** keep only these tabs; if the open one goes, `focus` (or its nearest neighbour) takes over */
+  /** keep only these tabs; if the open one goes, `focus` (or its nearest neighbor) takes over */
   const keepTabs = (keep: string[], focus?: string) => {
     setTabs(keep);
     if (active && keep.includes(active)) return;
@@ -699,7 +699,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       items.push(
         { label: 'Clear terminal', hint: 'Ctrl+L', action: () => setItems([]) },
         {
-          label: termMax ? 'Restore terminal' : 'Maximise terminal',
+          label: termMax ? 'Restore terminal' : 'Maximize terminal',
           action: () => setTermMax((m) => !m),
         },
         'separator',
@@ -713,7 +713,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       ...(keyboardless()
         ? []
         : [{ label: termOpen() ? 'Hide terminal' : 'Show terminal', action: toggleTerm }]),
-      { label: 'Colour theme…', action: () => setThemePick(true) },
+      { label: 'Color theme…', action: () => setThemePick(true) },
       ...(analyticsOn ? [{ label: 'Cookie settings', action: openCookies }] : []),
     );
     setMenu({ x: e.clientX, y: e.clientY, items });
@@ -727,7 +727,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
       x: beside ? r.right + 4 : r.left,
       y: beside ? r.bottom : r.bottom + 4,
       items: [
-        { label: 'Colour theme…', action: () => setThemePick(true) },
+        { label: 'Color theme…', action: () => setThemePick(true) },
         {
           label: shell.user === GUEST ? 'Log in…' : `Logged in as ${shell.user}…`,
           action: () => setUserPick(true),
@@ -1103,7 +1103,7 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
                   type="button"
                   className="icon-btn hide-closed"
                   onClick={() => setTermMax((m) => !m)}
-                  aria-label={termMax ? 'Restore terminal' : 'Maximise terminal'}
+                  aria-label={termMax ? 'Restore terminal' : 'Maximize terminal'}
                 >
                   <Icon d={termMax ? ICON.min : ICON.max} />
                 </button>

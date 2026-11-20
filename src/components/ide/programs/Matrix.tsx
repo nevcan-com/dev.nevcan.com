@@ -22,7 +22,7 @@ export default function Matrix({ exit }: ProgramProps) {
     const c = canvas.current!;
     const ctx = c.getContext('2d')!;
     const dpr = Math.min(devicePixelRatio || 1, 2);
-    // the theme's colours: the panel behind, the accent falling, the strongest text for sparks
+    // the theme's colors: the panel behind, the accent falling, the strongest text for sparks
     const css = getComputedStyle(c);
     const bg = css.getPropertyValue('--panel').trim() || '#10161e';
     const fg = css.getPropertyValue('--accent').trim() || '#6ff7e0';
