@@ -128,10 +128,10 @@ export const hiddenFiles = (): string[] => Object.keys(HIDDEN);
 /** hidden files, only for `ls -a` and `cat` */
 const HIDDEN: Record<string, string> = {
   // Live is what ⎇ main lists (data/branches.ts): keep the two in step
-  '.plan': `Live:  dev.nevcan.com (you are here)
+  '.plan': `Live:  www.nevcan.com
+       dev.nevcan.com (you are here)
        dive.nevcan.com
        fit.nevcan.com
-       www.nevcan.com
 Next:  film.nevcan.com
        game.nevcan.com
        shop.nevcan.com`,
