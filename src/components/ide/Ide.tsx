@@ -659,6 +659,9 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
             />
             <circle cx="353" cy="478" r="27" style={{ fill: 'var(--accent)' }} />
           </svg>
+          <span className="tb-tag" aria-hidden="true">
+            dev
+          </span>
         </a>
         <p className="title">
           <span className="title-user">guest@{'dev.nevcan.com'}</span>
@@ -671,15 +674,6 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           aria-label="Colour theme"
         >
           <Icon d={ICON.theme} />
-        </button>
-        <button
-          type="button"
-          className="tb-btn tb-term"
-          onClick={toggleTerm}
-          aria-pressed={term !== 'auto' ? term === 'open' : undefined}
-        >
-          <Icon d={ICON.terminal} />
-          <span className="tb-label">Terminal</span>
         </button>
       </header>
 
