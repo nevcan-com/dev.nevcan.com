@@ -100,8 +100,8 @@ const ICON = {
   md: 'M3.5 6.5h17v11h-17zM6.5 14.5v-5l2 2.5 2-2.5v5M15.5 9.5v5M13.5 12.5l2 2 2-2',
   collapseAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5',
   expandAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5M10 11.25v5',
-  theme:
-    'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM12 3.5v17M12 7h5M12 10.5h6.5M12 14h6.5M12 17.5h4.5',
+  settings:
+    'M18.1 10.6L20.5 10.9L20.5 13.1L18.1 13.4L17.3 15.4L18.8 17.2L17.2 18.8L15.4 17.3L13.4 18.1L13.1 20.5L10.9 20.5L10.6 18.1L8.6 17.3L6.8 18.8L5.2 17.2L6.7 15.4L5.9 13.4L3.5 13.1L3.5 10.9L5.9 10.6L6.7 8.6L5.2 6.8L6.8 5.2L8.6 6.7L10.6 5.9L10.9 3.5L13.1 3.5L13.4 5.9L15.4 6.7L17.2 5.2L18.8 6.8L17.3 8.6zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z',
 };
 
 function Tree({
@@ -612,6 +612,20 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     setMenu({ x: e.clientX, y: e.clientY, items });
   };
 
+  /** the settings menu (the gear), opened beside the button that asked for it */
+  const openSettings = (e: React.MouseEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const beside = r.left < 60; // the activity bar: to its right; the title bar: below it
+    setMenu({
+      x: beside ? r.right + 4 : r.left,
+      y: beside ? r.bottom : r.bottom + 4,
+      items: [
+        { label: 'Colour theme…', action: () => setThemePick(true) },
+        ...(analyticsOn ? [{ label: 'Cookie settings', action: openCookies }] : []),
+      ],
+    });
+  };
+
   const toggleExplorer = () =>
     setExplorer((x) => (x === 'open' || (x === 'auto' && !isMobile()) ? 'closed' : 'open'));
 
@@ -670,10 +684,11 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
         <button
           type="button"
           className="tb-btn only-mobile"
-          onClick={() => setThemePick(true)}
-          aria-label="Colour theme"
+          onClick={openSettings}
+          aria-label="Settings"
+          aria-haspopup="menu"
         >
-          <Icon d={ICON.theme} />
+          <Icon d={ICON.settings} />
         </button>
       </header>
 
@@ -697,14 +712,17 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           >
             <Icon d={ICON.terminal} />
           </button>
-          <span className="act-spacer" />
+          {/* panels above the line, links that leave the site below it */}
+          <span className="act-sep" aria-hidden="true" />
           <a
             className="act-btn"
-            href="https://dive.nevcan.com"
-            title="dive.nevcan.com"
-            aria-label="dive.nevcan.com"
+            href={github}
+            target="_blank"
+            rel="me noopener"
+            title="GitHub"
+            aria-label="GitHub"
           >
-            <Icon d={ICON.dive} />
+            <Icon d={ICON.github} />
           </a>
           <a
             className="act-btn"
@@ -716,24 +734,25 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           >
             <Icon d={ICON.linkedin} />
           </a>
+          {/* until the branch picker takes it over (⎇ main → diving) */}
           <a
             className="act-btn"
-            href={github}
-            target="_blank"
-            rel="me noopener"
-            title="GitHub"
-            aria-label="GitHub"
+            href="https://dive.nevcan.com"
+            title="dive.nevcan.com"
+            aria-label="dive.nevcan.com"
           >
-            <Icon d={ICON.github} />
+            <Icon d={ICON.dive} />
           </a>
+          <span className="act-spacer" />
           <button
             type="button"
             className="act-btn"
-            onClick={() => setThemePick(true)}
-            title="Colour theme"
-            aria-label="Colour theme"
+            onClick={openSettings}
+            title="Settings"
+            aria-label="Settings"
+            aria-haspopup="menu"
           >
-            <Icon d={ICON.theme} />
+            <Icon d={ICON.settings} />
           </button>
         </nav>
 
