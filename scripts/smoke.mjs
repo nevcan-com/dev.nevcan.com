@@ -445,6 +445,43 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     );
   }
 
+  // the tab menu: right-click a tab
+  {
+    const tabs = () =>
+      p.ev(`[...document.querySelectorAll('.tab[data-path]')].map(t => t.dataset.path).join(',')`);
+    const activeTab = () => p.ev(`document.querySelector('.tab.active')?.dataset.path ?? null`);
+    const menuOn = async (path, label) => {
+      await p.ev(`(() => { const t = document.querySelector('.tab[data-path="${path}"]'); const r = t.getBoundingClientRect();
+        t.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.x + 10, clientY: r.y + 10 })) })()`);
+      await sleep(200);
+      await p.ev(
+        `[...document.querySelectorAll('.ctx-item')].find(b => b.textContent === '${label}')?.click()`,
+      );
+      await sleep(300);
+    };
+    await p.run('open ~/README.md');
+    await p.run('open ~/education.md');
+    await p.run('open ~/contact.md');
+    await p.run('open ~/skills/README.md');
+    await menuOn('education.md', 'Close to the right');
+    check(
+      'Close to the right keeps it and those before it',
+      (await tabs()).endsWith('education.md') && (await activeTab()) === 'education.md',
+      await tabs(),
+    );
+    await p.run('open ~/contact.md');
+    await menuOn('contact.md', 'Close others');
+    check('Close others leaves only that one', (await tabs()) === 'contact.md', await tabs());
+    await menuOn('contact.md', 'Close all');
+    check(
+      'Close all closes every tab',
+      (await tabs()) === '' &&
+        /No file open/.test(await p.ev(`document.querySelector('.doc')?.textContent`)),
+      await tabs(),
+    );
+    await p.run('open ~/README.md');
+  }
+
   // login: a name instead of "guest", only in this browser
   {
     const stored = () => p.ev(`localStorage.getItem('dev-user')`);

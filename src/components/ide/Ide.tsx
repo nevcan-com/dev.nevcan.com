@@ -331,16 +331,17 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   /** clicks in the explorer and the preview run through the shell, so the terminal teaches */
   const openViaShell = useCallback((path: string) => exec(`open ~/${path}`), [exec]);
 
-  const closeTab = (path: string) => {
-    const i = tabs.indexOf(path);
-    const next = tabs.filter((t) => t !== path);
-    setTabs(next);
-    if (active === path) {
-      const neighbour = next[Math.min(i, next.length - 1)] ?? null;
-      setActive(neighbour);
-      if (neighbour) history.replaceState({ path: neighbour }, '', vfs[neighbour]!.route);
-    }
+  /** keep only these tabs; if the open one goes, `focus` (or its nearest neighbour) takes over */
+  const keepTabs = (keep: string[], focus?: string) => {
+    setTabs(keep);
+    if (active && keep.includes(active)) return;
+    const i = active ? tabs.indexOf(active) : 0;
+    const left = tabs.slice(0, i).filter((t) => keep.includes(t));
+    const next = focus ?? tabs.slice(i).find((t) => keep.includes(t)) ?? left.at(-1) ?? null;
+    setActive(next);
+    if (next) history.replaceState({ path: next }, '', vfs[next]!.route);
   };
+  const closeTab = (path: string) => keepTabs(tabs.filter((t) => t !== path));
 
   // back / forward
   useEffect(() => {
@@ -628,7 +629,29 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
 
     const el = t.closest<HTMLElement>('[data-path]');
     const link = t.closest('a');
-    if (el) {
+    const tab = el?.classList.contains('tab') ? el.dataset.path! : null;
+    if (tab) {
+      // the tab's own menu, as in the editor
+      const i = tabs.indexOf(tab);
+      items.push(
+        { label: 'Close', action: () => closeTab(tab) },
+        {
+          label: 'Close others',
+          disabled: tabs.length < 2,
+          action: () => keepTabs([tab], tab),
+        },
+        {
+          label: 'Close to the right',
+          disabled: i === tabs.length - 1,
+          action: () => keepTabs(tabs.slice(0, i + 1), tab),
+        },
+        { label: 'Close all', action: () => keepTabs([]) },
+        'separator',
+        { label: 'Copy link', action: () => copy(location.origin + vfs[tab]!.route, 'link') },
+        { label: 'Copy path', action: () => copy(`~/${tab}`, 'path') },
+        'separator',
+      );
+    } else if (el) {
       const path = el.dataset.path!;
       const term = !keyboardless();
       if (el.dataset.kind === 'file')
@@ -966,6 +989,13 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
                       data-kind="file"
                       className={`tab ${p === active ? 'active' : ''}`}
                       role="presentation"
+                      // a middle click closes it, as in the editor
+                      onAuxClick={(e) => {
+                        if (e.button === 1) closeTab(p);
+                      }}
+                      onMouseDown={(e) => {
+                        if (e.button === 1) e.preventDefault(); // no autoscroll
+                      }}
                     >
                       <button
                         type="button"
