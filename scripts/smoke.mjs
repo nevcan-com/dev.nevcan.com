@@ -187,10 +187,16 @@ async function open({ touch = false } = {}) {
     await send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...r });
     await sleep(200);
   };
+  /** type into whatever has focus */
+  const type = async (text) => {
+    await send('Input.insertText', { text });
+    await sleep(250);
+  };
   return {
     ev,
     key,
     hover,
+    type,
     run,
     running,
     hint,
@@ -236,7 +242,7 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     );
     check(
       'activity bar: panels, then GitHub and LinkedIn, Settings at the bottom',
-      /^Explorer, Terminal, GitHub, LinkedIn, .*Settings$/.test(order),
+      /^Explorer, Terminal, Search, GitHub, LinkedIn, .*Settings$/.test(order),
       order,
     );
   }
@@ -392,6 +398,53 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     (await p.ev(`document.querySelectorAll('.explorer [aria-expanded="false"]').length`)) === 0,
   );
 
+  // the Search view
+  {
+    const sum = () => p.ev(`document.querySelector('.search-sum')?.textContent ?? ''`);
+    await p.ev(`document.querySelector('.act-btn[aria-label="Search"]').click()`);
+    await sleep(300);
+    check(
+      'Search opens with its field focused',
+      await p.ev(`document.activeElement?.classList.contains('search-input')`),
+    );
+    await p.type('dubai');
+    check(
+      'it finds text across the files',
+      /results? in \d+ files?/.test(await sum()),
+      await sum(),
+    );
+    await p.ev(`document.querySelector('.search-input').select()`);
+    await p.type('uludas');
+    check(
+      'case and accents don\'t matter ("uludas" finds "Uludaş")',
+      /results? in/.test(await sum()),
+      await sum(),
+    );
+    const target = await p.ev(`document.querySelectorAll('.search-file')[1]?.title`);
+    await p.ev(
+      `document.querySelectorAll('.search-file')[1]?.nextElementSibling?.querySelector('.search-hit')?.click()`,
+    );
+    await sleep(500);
+    check(
+      'a result opens its file',
+      (await p.ev(`'~/' + document.querySelector('.tab.active')?.dataset.path`)) === target,
+      target,
+    );
+    check(
+      'the match is marked in the document',
+      await p.ev(
+        `!('highlights' in CSS) || (CSS.highlights.has('search-now') && CSS.highlights.has('search'))`,
+      ),
+    );
+    await p.ev(`document.querySelector('.act-btn[aria-label="Explorer"]').click()`);
+    await sleep(200);
+    check(
+      'Explorer brings the files back and the marks go',
+      (await p.ev(`!!document.querySelector('.explorer .tree-root')`)) &&
+        (await p.ev(`!('highlights' in CSS) || !CSS.highlights.has('search')`)),
+    );
+  }
+
   // colour themes: a preview saves nothing, only a pick does (notes/legal.md, item 12)
   const stored = () => p.ev(`localStorage.getItem('dev-theme')`);
   const theme = () => p.ev(`document.documentElement.dataset.theme ?? 'default'`);
@@ -468,6 +521,7 @@ console.log('\ntouch-only');
   await p.reject();
   check('no terminal', !(await shown('.terminal')));
   check('no terminal button in the title bar', !(await shown('.tb-term')));
+  check('a search button in the title bar', await shown('.tb-btn[aria-label="Search"]'));
   check('a settings button in the title bar', await shown('.tb-btn[aria-label="Settings"]'));
   await p.ev(`document.querySelector('.tb-btn[aria-label="Settings"]').click()`);
   await sleep(300);

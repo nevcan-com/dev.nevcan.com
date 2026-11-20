@@ -20,6 +20,8 @@ import Terminal, { type TermItem, type TerminalHandle } from './Terminal';
 import SourceView from './SourceView';
 import CookiePane from './CookiePane';
 import ThemePicker from './ThemePicker';
+import SearchPanel from './SearchPanel';
+import { findRanges, type Hit } from '@/lib/search';
 import { pickTheme } from '@/lib/theme';
 import { themeById } from '@/data/themes';
 import CrashView from './CrashView';
@@ -100,6 +102,7 @@ const ICON = {
   md: 'M3.5 6.5h17v11h-17zM6.5 14.5v-5l2 2.5 2-2.5v5M15.5 9.5v5M13.5 12.5l2 2 2-2',
   collapseAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5',
   expandAll: 'M8 4.5h11.5V16M4.5 8h11.5v11.5H4.5zM7.5 13.75h5M10 11.25v5',
+  search: 'M10.5 4.5a6 6 0 1 0 0 12 6 6 0 0 0 0-12zM15 15l5 5',
   settings:
     'M18.1 10.6L20.5 10.9L20.5 13.1L18.1 13.4L17.3 15.4L18.8 17.2L17.2 18.8L15.4 17.3L13.4 18.1L13.1 20.5L10.9 20.5L10.6 18.1L8.6 17.3L6.8 18.8L5.2 17.2L6.7 15.4L5.9 13.4L3.5 13.1L3.5 10.9L5.9 10.6L6.7 8.6L5.2 6.8L6.8 5.2L8.6 6.7L10.6 5.9L10.9 3.5L13.1 3.5L13.4 5.9L15.4 6.7L17.2 5.2L18.8 6.8L17.3 8.6zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z',
 };
@@ -216,6 +219,12 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   const [term, setTerm] = useState<Panel>('auto');
   const [termMax, setTermMax] = useState(false);
   const [explorer, setExplorer] = useState<Panel>('auto');
+  /** what the side bar shows: the file tree or Search */
+  const [side, setSide] = useState<'files' | 'search'>('files');
+  const [query, setQuery] = useState('');
+  /** the search result clicked last: the document scrolls to it and marks it */
+  const [jump, setJump] = useState<{ path: string; hit: Hit; id: number } | null>(null);
+  const [searchFocus, setSearchFocus] = useState(0);
   const [termHeight, setTermHeight] = useState<number | null>(null);
   // every folder starts open except the ones to discover (FOUND_LATER), unless the page that
   // was opened lives in one of them
@@ -350,6 +359,48 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
   useEffect(() => {
     rootRef.current?.querySelector('.doc')?.scrollTo(0, 0);
   }, [active]);
+
+  // while the Search view is open, its matches are marked in the open document; the result
+  // clicked last is scrolled to (once) and marked more strongly. CSS Custom Highlight API: the
+  // document itself is not touched. Browsers without it still scroll to the match.
+  const jumped = useRef(0);
+  useEffect(() => {
+    const hl = typeof CSS !== 'undefined' && 'highlights' in CSS ? CSS.highlights : null;
+    hl?.delete('search');
+    hl?.delete('search-now');
+    const doc = rootRef.current?.querySelector<HTMLElement>('.doc');
+    if (!doc || !file || side !== 'search') return;
+    const source = view === 'source';
+    const ranges = findRanges(doc, query, source ? '.src-text' : '.prose');
+    if (hl && ranges.length) hl.set('search', new Highlight(...ranges));
+    if (!jump || jump.path !== active) return;
+    let now: Range | undefined;
+    if (source) {
+      // the source shows every line as it is: go by the line
+      const row = doc.querySelectorAll('.src-row')[jump.hit.line];
+      now = ranges.find((r) => row?.contains(r.startContainer));
+    } else now = ranges[Math.min(jump.hit.nth, ranges.length - 1)];
+    if (now) hl?.set('search-now', new Highlight(now));
+    if (jumped.current === jump.id) return;
+    jumped.current = jump.id;
+    const box = now?.getBoundingClientRect();
+    if (!box) return;
+    const d = doc.getBoundingClientRect();
+    doc.scrollTo({ top: doc.scrollTop + box.top - d.top - d.height / 3 });
+  }, [active, file, view, query, jump, side]);
+
+  // Ctrl+Shift+F (⌘⇧F): Search, as in the editor
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || !e.shiftKey || e.key.toLowerCase() !== 'f') return;
+      e.preventDefault();
+      setSide('search');
+      setExplorer('open');
+      setSearchFocus((n) => n + 1);
+    };
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  }, []);
   useEffect(() => {
     document.title =
       file && file.route !== '/'
@@ -626,8 +677,18 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
     });
   };
 
-  const toggleExplorer = () =>
-    setExplorer((x) => (x === 'open' || (x === 'auto' && !isMobile()) ? 'closed' : 'open'));
+  const sideOpen = () => explorer === 'open' || (explorer === 'auto' && !isMobile());
+  /** the activity bar buttons: open the side bar on that view; on the view it shows, close it */
+  const showSide = (v: 'files' | 'search') => {
+    if (sideOpen() && side === v) return setExplorer('closed');
+    setSide(v);
+    setExplorer('open');
+    if (v === 'search') setSearchFocus((n) => n + 1);
+  };
+  const openHit = (path: string, hit: Hit) => {
+    if (active !== path) openViaShell(path);
+    setJump({ path, hit, id: nextId++ });
+  };
 
   return (
     <div
@@ -648,10 +709,18 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
         <button
           type="button"
           className="tb-btn only-mobile"
-          onClick={toggleExplorer}
+          onClick={() => showSide('files')}
           aria-label="Files"
         >
           <Icon d={ICON.files} />
+        </button>
+        <button
+          type="button"
+          className="tb-btn only-mobile"
+          onClick={() => showSide('search')}
+          aria-label="Search"
+        >
+          <Icon d={ICON.search} />
         </button>
         <a
           className="tb-logo"
@@ -697,9 +766,10 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           <button
             type="button"
             className="act-btn act-files"
-            onClick={toggleExplorer}
+            onClick={() => showSide('files')}
             title="Explorer"
             aria-label="Explorer"
+            aria-pressed={side === 'files' && explorer !== 'closed'}
           >
             <Icon d={ICON.files} />
           </button>
@@ -711,6 +781,16 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
             aria-label="Terminal"
           >
             <Icon d={ICON.terminal} />
+          </button>
+          <button
+            type="button"
+            className="act-btn"
+            onClick={() => showSide('search')}
+            title="Search"
+            aria-label="Search"
+            aria-pressed={side === 'search' && explorer !== 'closed'}
+          >
+            <Icon d={ICON.search} />
           </button>
           {/* panels above the line, links that leave the site below it */}
           <span className="act-sep" aria-hidden="true" />
@@ -756,39 +836,55 @@ export default function Ide({ vfs, initialPath, notFound = false }: Props) {
           </button>
         </nav>
 
-        <aside className="explorer" aria-label="Explorer">
+        <aside className="explorer" aria-label={side === 'search' ? 'Search' : 'Explorer'}>
           <div className="panel-head">
-            <span>Explorer</span>
+            <span>{side === 'search' ? 'Search' : 'Explorer'}</span>
             <button
               type="button"
               className="icon-btn only-mobile"
               onClick={() => setExplorer('closed')}
-              aria-label="Close files"
+              aria-label={side === 'search' ? 'Close search' : 'Close files'}
             >
               <Icon d={ICON.close} />
             </button>
           </div>
-          <div className="tree-root">
-            <span>dev.nevcan.com</span>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={toggleAllDirs}
-              title={expanded.size ? 'Collapse folders' : 'Expand folders'}
-              aria-label={expanded.size ? 'Collapse folders' : 'Expand folders'}
-            >
-              <Icon d={expanded.size ? ICON.collapseAll : ICON.expandAll} />
-            </button>
-          </div>
-          <Tree
-            vfs={vfs}
-            dir=""
-            depth={0}
-            active={active}
-            expanded={expanded}
-            onToggle={toggleDir}
-            onOpen={openViaShell}
-          />
+          {side === 'search' ? (
+            <SearchPanel
+              vfs={vfs}
+              query={query}
+              onQuery={(q) => {
+                setQuery(q);
+                setJump(null);
+              }}
+              onOpen={openHit}
+              focusKey={searchFocus}
+              icons={{ md: <Icon d={ICON.md} />, chevron: <Icon d={ICON.chevron} /> }}
+            />
+          ) : (
+            <>
+              <div className="tree-root">
+                <span>dev.nevcan.com</span>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={toggleAllDirs}
+                  title={expanded.size ? 'Collapse folders' : 'Expand folders'}
+                  aria-label={expanded.size ? 'Collapse folders' : 'Expand folders'}
+                >
+                  <Icon d={expanded.size ? ICON.collapseAll : ICON.expandAll} />
+                </button>
+              </div>
+              <Tree
+                vfs={vfs}
+                dir=""
+                depth={0}
+                active={active}
+                expanded={expanded}
+                onToggle={toggleDir}
+                onOpen={openViaShell}
+              />
+            </>
+          )}
         </aside>
         <div
           className="scrim only-mobile"
