@@ -159,9 +159,11 @@ Sketchfab   sketchfab.com/nevcanuludas
 X           x.com/nevcanuludas
 Bluesky     nevcanuludas.bsky.social
 Facebook    facebook.com/nevcanuludas
+Tumblr      nevcanuludas.tumblr.com
 
 # card
-Card        hihello.com/p/2a5123b0-641a-4681-8852-c963488baf28`,
+Card        hihello.com/p/2a5123b0-641a-4681-8852-c963488baf28
+About.me    about.me/nevcanuludas`,
 };
 
 const txt = (t: string, c?: string): Seg => ({ t, c });

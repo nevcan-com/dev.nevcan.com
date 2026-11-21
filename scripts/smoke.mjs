@@ -477,9 +477,11 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
       `[...document.querySelectorAll('.term-out a[href]')].map(a => a.href)`,
     );
     check(
-      '.social: the addresses are links (Bluesky to bsky.app, Scholar there too)',
+      '.social: the addresses are links (Bluesky to bsky.app, Scholar and About.me too)',
       links.includes('https://bsky.app/profile/nevcanuludas.bsky.social') &&
-        links.some((h) => h.startsWith('https://scholar.google.com/citations?user=')),
+        links.some((h) => h.startsWith('https://scholar.google.com/citations?user=')) &&
+        links.includes('https://about.me/nevcanuludas') &&
+        !links.includes('https://About.me'),
       links.length,
     );
   }
