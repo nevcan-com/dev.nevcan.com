@@ -471,6 +471,18 @@ console.log(`smoke: ${URL_}\n\ndesktop`);
     );
   }
 
+  await p.run('ls -a');
+  await p.run('cat ~/.ideas');
+  {
+    const out = await p.ev(
+      `[...document.querySelectorAll('.term-out')].map(e => e.innerText).join('\\n')`,
+    );
+    check(
+      '.ideas: ls -a lists it and cat shows it',
+      out.includes('.ideas') && out.includes('# Beacon · 2026'),
+    );
+  }
+
   await p.run('cat ~/.social');
   {
     const links = await p.ev(
