@@ -5,10 +5,10 @@
 **Akdeniz University** · 2025–2027
 
 Thesis, in progress: _Typological Analysis of Mediterranean Amphorae Using Artificial
-Intelligence_. Its prototype, [Kaide](projects/wetnote.md), uses computer vision to suggest an amphora's type from a
-photo taken in the field or underwater, reading the rim, neck, handles, body and base. Instead
-of matching a find by eye against pages of catalogs, researchers get a fast first answer with
-less room for human error.
+Intelligence_. Its module, [Kaide](projects/wetnote.md), uses computer vision to return the
+most similar amphora types for a photo taken in the field or underwater. Instead of matching a
+find by eye against pages of catalogs, researchers get a fast first answer with less room for
+human error.
 
 ## BSc, Mining Engineering
 
