@@ -20,3 +20,5 @@ by invitation.
 | Site     | A small static site generator: JSON, Pug and SCSS |
 | Back end | Firebase: Authentication, Firestore and Storage   |
 | Security | Security rules covered by tests                   |
+
+Built for GUE: [experience/2022-gue](../experience/2022-gue.md).
