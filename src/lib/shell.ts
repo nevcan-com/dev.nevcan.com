@@ -164,6 +164,20 @@ Tumblr      nevcanuludas.tumblr.com
 # card
 Card        hihello.com/p/2a5123b0-641a-4681-8852-c963488baf28
 About.me    about.me/nevcanuludas`,
+  '.ideas': `# ideas: things I may build one day
+# each: what it is · the problem · where it stands
+
+# Beacon · 2026
+A citizen-science app, web and mobile: divers, fishers and beachgoers report what they see
+underwater or on the coast (an amphora, a ghost net) with a photo and its location.
+Problem: finds and hazards go unreported, because there is no quick way to log them.
+Amphora reports could feed Kaide; ghost-net reports, cleanup dives and a public hazard map.
+Status: concept.
+
+# team-mates · 2023
+A social network for GUE divers: teams, events, courses.
+Problem: GUE's community is spread across Facebook groups and chats.
+Status: idea; a page template from 2023.`,
 };
 
 const txt = (t: string, c?: string): Seg => ({ t, c });
