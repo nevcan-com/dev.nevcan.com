@@ -21,3 +21,5 @@ accounts; a SaaS version for other teams is planned.
 [Peyk](https://getpeyk.com) is a name I share with a friend: two independent products for the
 two channels of company communication. Signal, for social media, is mine; Inbox, for email, is
 theirs.
+
+Built for GUE: [experience/diving/2022-gue](../experience/diving/2022-gue.md).
