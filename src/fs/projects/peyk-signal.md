@@ -22,4 +22,4 @@ accounts; a SaaS version for other teams is planned.
 two channels of company communication. Signal, for social media, is mine; Inbox, for email, is
 theirs.
 
-Built for GUE: [experience/2022-gue](../experience/2022-gue.md).
+Built for GUE: [experience/diving/2022-gue](../experience/diving/2022-gue.md).

@@ -21,4 +21,4 @@ by invitation.
 | Back end | Firebase: Authentication, Firestore and Storage   |
 | Security | Security rules covered by tests                   |
 
-Built for GUE: [experience/2022-gue](../experience/2022-gue.md).
+Built for GUE: [experience/diving/2022-gue](../experience/diving/2022-gue.md).
