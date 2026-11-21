@@ -2,8 +2,9 @@
 
 **Since 2025** · [wetnote.com](https://www.wetnote.com)
 
-My underwater software under one name: one brand, many modules, each a separate app with its
-own stack.
+Software for underwater researchers and archaeologists. Identifying an amphora's type takes a
+lot of time and leaves a wide margin for error; WetNote's tools make that work faster and more
+reliable. One brand, many modules, each a separate app with its own stack.
 
 ## Amphora catalog
 
