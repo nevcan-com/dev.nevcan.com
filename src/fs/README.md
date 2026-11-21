@@ -19,7 +19,7 @@ brings you back to this page.
 
 - [whoami](about/whoami.md): the short version
 - [experience/](experience/2025-dipnot.md): roles and companies, newest first
-- [projects/](projects/dipnot.md): what I'm building now
+- [projects/](projects/dipnot.md): products I started and run myself; work for employers is in experience/
 - [skills](skills/README.md): what I work with
 - [education](education.md)
 - [contact](contact.md)
