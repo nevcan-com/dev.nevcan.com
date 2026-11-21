@@ -2,14 +2,25 @@
 
 **Since 2025** · [wetnote.com](https://www.wetnote.com)
 
-My underwater software under one name: one brand, many modules, each a separate app with its
-own stack.
+Software for underwater researchers and archaeologists. Identifying an amphora's type takes a
+lot of time and leaves a wide margin for error; WetNote's tools make that work faster and more
+reliable. One brand, many modules, each a separate app with its own stack.
 
 ## Amphora catalog
 
-A searchable typology database of amphorae: filter by rim, neck, handles, body and base, by
-date and region, with photos, drawings, 3D models and silhouettes for each type. Live at
-[wetnote.com](https://www.wetnote.com).
+Amphora types are described across printed catalogs and separate online databases; this one
+brings them into a single searchable typology. Live at
+[wetnote.com/catalogue](https://wetnote.com/catalogue.html).
+
+- Filter by rim, neck, handles, body and base, by date and region
+- Photos, drawings, 3D models and silhouettes for each type
+- A map of amphorae by period and country
+
+|            |                                                     |
+| ---------- | --------------------------------------------------- |
+| Site       | HTML and JavaScript, with Bulma and Select2         |
+| 3D and map | model-viewer for the 3D models, Leaflet for the map |
+| Hosting    | Firebase Hosting                                    |
 
 ## Kaide
 
@@ -19,5 +30,10 @@ the catalog of about 500, ranked by similarity score. Instead of matching a find
 pages of catalogs, researchers get a fast first answer with less room for human error; the
 thesis measures the difference. Status: in development; version 1 is due with the thesis in
 early 2027.
+
+| Planned   |                                                 |
+| --------- | ----------------------------------------------- |
+| Model     | Python and PyTorch, exported to ONNX            |
+| Inference | ONNX Runtime Web, on the device, with no server |
 
 More on the thesis: [education](../education.md).
