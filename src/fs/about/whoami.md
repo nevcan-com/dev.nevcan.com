@@ -8,9 +8,9 @@ a performance management platform, at SabancıDx. Most of that work was in Scrum
 side with managers, designers and developers, and along the way front-end architecture became
 my speciality.
 
-Today I lead technology and product at Dipnot, a diving and marine-life publication with a
-mobile app, an editorial platform and a website. I own it end to end, from architecture and
-security to delivery, as a one-person engineering team working with AI-assisted development.
+Today I'm the technical co-founder of Dipnot, a diving and marine-life publication with a mobile
+app, an admin platform and a website. I own it end to end, from architecture and security to
+delivery, as a one-person engineering team working with AI coding agents.
 
 Diving runs alongside all of it. I've been diving since 2008 and teaching since 2011, full time
 since 2022, when I joined Deep Dive Dubai, the world's deepest pool; there I also built the
